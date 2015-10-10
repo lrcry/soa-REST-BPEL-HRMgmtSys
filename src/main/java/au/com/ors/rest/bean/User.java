@@ -2,8 +2,7 @@ package au.com.ors.rest.bean;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.util.StringUtils;
 
 public class User implements Serializable {
 
@@ -25,24 +24,26 @@ public class User implements Serializable {
 	String role;
 
 	String department;
-
-	@JsonCreator
-	public User(@JsonProperty("_uid") String _uid,
-			@JsonProperty("_pwd") String _pwd,
-			@JsonProperty("shortKey") String shortKey,
-			@JsonProperty("lastName") String lastName,
-			@JsonProperty("firstName") String firstName,
-			@JsonProperty("role") String role,
-			@JsonProperty("department") String department) {
-		super();
-		this._uid = _uid;
-		this._pwd = _pwd;
-		this.shortKey = shortKey;
-		this.lastName = lastName;
-		this.firstName = firstName;
-		this.role = role;
-		this.department = department;
-	}
+	
+//	
+//
+//	@JsonCreator
+//	public User(@JsonProperty("_uid") String _uid,
+//			@JsonProperty("_pwd") String _pwd,
+//			@JsonProperty("shortKey") String shortKey,
+//			@JsonProperty("lastName") String lastName,
+//			@JsonProperty("firstName") String firstName,
+//			@JsonProperty("role") String role,
+//			@JsonProperty("department") String department) {
+//		super();
+//		this._uid = _uid;
+//		this._pwd = _pwd;
+//		this.shortKey = shortKey;
+//		this.lastName = lastName;
+//		this.firstName = firstName;
+//		this.role = role;
+//		this.department = department;
+//	}
 
 	public String get_uid() {
 		return _uid;
@@ -70,5 +71,66 @@ public class User implements Serializable {
 
 	public String getDepartment() {
 		return department;
+	}
+
+	public void set_uid(String _uid) {
+		this._uid = _uid;
+	}
+
+	public void set_pwd(String _pwd) {
+		this._pwd = _pwd;
+	}
+
+	public void setShortKey(String shortKey) {
+		this.shortKey = shortKey;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+	
+	public String toString() {
+		StringBuilder sbUser = new StringBuilder();
+		if (!StringUtils.isEmpty(_uid)) {
+			sbUser.append("_uid=").append(_uid).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(_pwd)) {
+			sbUser.append("_pwd=").append(_pwd).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(shortKey)) {
+			sbUser.append("shortKey=").append(shortKey).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(lastName)) {
+			sbUser.append("lastName=").append(lastName).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(firstName)) {
+			sbUser.append("firstName=").append(firstName).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(role)) {
+			sbUser.append("role=").append(role).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(department)) {
+			sbUser.append("department=").append(department);
+		}
+		
+		return sbUser.toString();
 	}
 }
