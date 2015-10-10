@@ -1,13 +1,11 @@
-package au.com.ors.rest.user.bean;
+package au.com.ors.rest.bean;
 
 import java.io.Serializable;
-
-import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class User extends ResourceSupport implements Serializable {
+public class User implements Serializable {
 
 	/**
 	 * 
