@@ -1,9 +1,12 @@
-package au.com.ors.rest.user.dao;
+package au.com.ors.rest.dao;
 
 import java.util.List;
 
-import au.com.ors.rest.user.bean.User;
+import org.springframework.stereotype.Component;
 
+import au.com.ors.rest.bean.User;
+
+@Component
 public class UserDAO {
 	public User findByUid(String uid) {
 		// TODO
