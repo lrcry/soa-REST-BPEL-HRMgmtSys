@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:beans="http://www.springframework.org/schema/beans"
+xmlns:mvc="http://www.springframework.org/schema/mvc" 
+xmlns:p="http://www.springframework.org/schema/p"
+xmlns:aop="http://www.springframework.org/schema/aop"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+	
+	<!-- Automatically scan components for dependency injection -->
+	<context:property-placeholder location="classpath:*.properties" />
+	<context:component-scan base-package="au.com.ors.rest" annotation-config="true"></context:component-scan>	
+	<mvc:default-servlet-handler/>
+	<mvc:annotation-driven/>
+
+
+	<!-- 配置相应的controller -->
+	<!-- 这个name 其实就相当于你要提交的url 当你提交的url 是 /hello的时候 你的请求 就会 被DispatcherServlet 拦截器拦截下来 -->
+	<!-- 然后他在根据那个控制器是负责处理/hello 请求的 然后找到他，然后就由他来处理这个请求的相应的任务。 
+	<beans:bean name="/login.do" class="au.com.studyunsw.controller.LoginController">
+		<beans:property name="methodNameResolver">
+			<beans:ref bean="paramMethodResolver"/>
+		</beans:property>
+	</beans:bean>-->
+	<!-- <beans:bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"/> 
+	<beans:bean class="cn.projx.online.controller.ProductController"/> -->
+
+	<!-- 配置参数名称解析器 
+	<beans:bean id="paramMethodResolver" class="org.springframework.web.servlet.mvc.multiaction.ParameterMethodNameResolver">
+		<beans:property name="paramName" value="a"/>
+	</beans:bean>-->	
+</beans:beans>
