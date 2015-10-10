@@ -1,5 +1,11 @@
 package au.com.ors.rest.exceptions;
 
+/**
+ * DAO general exception<br/>
+ * 
+ * @author hansmong
+ *
+ */
 public class DAOException extends Exception {
 
 	/**
@@ -10,7 +16,7 @@ public class DAOException extends Exception {
 	public DAOException() {
 		super();
 	}
-	
+
 	public DAOException(String msg) {
 		super(msg);
 	}

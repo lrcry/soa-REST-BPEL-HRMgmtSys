@@ -1,5 +1,11 @@
 package au.com.ors.rest.exceptions;
 
+/**
+ * User not found exception<br/>
+ * 
+ * @author hansmong
+ *
+ */
 public class UserNotFoundException extends ServiceException {
 
 	/**

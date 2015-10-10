@@ -37,6 +37,11 @@ public class UserDAO {
 
 	private List<User> usersList = new ArrayList<>();
 
+	/**
+	 * UserDAO initialization to read the XML into a list<br/>
+	 * 
+	 * @throws DAOException
+	 */
 	@PostConstruct
 	public void init() throws DAOException {
 		// get user data file path
@@ -78,17 +83,49 @@ public class UserDAO {
 				.println("================================== print all users ended ==================================");
 	}
 
+	/**
+	 * Find a user by its UID<br/>
+	 * 
+	 * @param uid
+	 *            user ID
+	 * @return object of user
+	 */
 	public User findByUid(String uid) {
 		for (User user : usersList) {
 			if (user.get_uid().equals(uid)) {
 				return user;
 			}
 		}
-		
+
 		return null;
 	}
 
+	/**
+	 * Find all users<br/>
+	 * 
+	 * @return list of users
+	 */
 	public List<User> findAll() {
 		return this.usersList;
+	}
+
+	/**
+	 * Find all users with whose department contains the given department
+	 * keyword<br/>
+	 * 
+	 * @param department
+	 *            department keyword
+	 * @return lists of users that satisfies the criteria
+	 */
+	public List<User> findBySearchDepartment(String department) {
+		List<User> userWithDept = new ArrayList<>();
+		
+		for (User user : usersList) {
+			if (StringUtils.substringMatch(user.getDepartment(), 0, department)) {
+				userWithDept.add(user);
+			}
+		}
+
+		return userWithDept;
 	}
 }

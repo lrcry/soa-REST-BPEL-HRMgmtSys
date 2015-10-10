@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import org.springframework.util.StringUtils;
 
+/**
+ * User bean<br/>
+ * 
+ * @author hansmong
+ *
+ */
 public class User implements Serializable {
 
 	/**
@@ -24,26 +30,6 @@ public class User implements Serializable {
 	String role;
 
 	String department;
-	
-//	
-//
-//	@JsonCreator
-//	public User(@JsonProperty("_uid") String _uid,
-//			@JsonProperty("_pwd") String _pwd,
-//			@JsonProperty("shortKey") String shortKey,
-//			@JsonProperty("lastName") String lastName,
-//			@JsonProperty("firstName") String firstName,
-//			@JsonProperty("role") String role,
-//			@JsonProperty("department") String department) {
-//		super();
-//		this._uid = _uid;
-//		this._pwd = _pwd;
-//		this.shortKey = shortKey;
-//		this.lastName = lastName;
-//		this.firstName = firstName;
-//		this.role = role;
-//		this.department = department;
-//	}
 
 	public String get_uid() {
 		return _uid;
@@ -100,37 +86,37 @@ public class User implements Serializable {
 	public void setDepartment(String department) {
 		this.department = department;
 	}
-	
+
 	public String toString() {
 		StringBuilder sbUser = new StringBuilder();
 		if (!StringUtils.isEmpty(_uid)) {
 			sbUser.append("_uid=").append(_uid).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(_pwd)) {
 			sbUser.append("_pwd=").append(_pwd).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(shortKey)) {
 			sbUser.append("shortKey=").append(shortKey).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(lastName)) {
 			sbUser.append("lastName=").append(lastName).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(firstName)) {
 			sbUser.append("firstName=").append(firstName).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(role)) {
 			sbUser.append("role=").append(role).append(",");
 		}
-		
+
 		if (!StringUtils.isEmpty(department)) {
 			sbUser.append("department=").append(department);
 		}
-		
+
 		return sbUser.toString();
 	}
 }

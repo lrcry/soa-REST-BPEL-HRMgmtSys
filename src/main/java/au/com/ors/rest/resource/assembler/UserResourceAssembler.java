@@ -9,8 +9,15 @@ import au.com.ors.rest.bean.User;
 import au.com.ors.rest.controller.UserController;
 import au.com.ors.rest.resource.UserResource;
 
+/**
+ * Assemble user to user resource<br/>
+ * 
+ * @author hansmong
+ *
+ */
 @Component
-public class UserResourceAssembler extends ResourceAssemblerSupport<User, UserResource> {
+public class UserResourceAssembler extends
+		ResourceAssemblerSupport<User, UserResource> {
 	public UserResourceAssembler() {
 		super(UserController.class, UserResource.class);
 	}
@@ -24,7 +31,8 @@ public class UserResourceAssembler extends ResourceAssemblerSupport<User, UserRe
 	public UserResource toResource(User user) {
 		UserResource userResource = instantiateResource(user);
 		userResource.user = user;
-		userResource.add(linkTo(UserController.class).slash(user.get_uid()).withSelfRel());
+		userResource.add(linkTo(UserController.class).slash(user.get_uid())
+				.withSelfRel());
 		return userResource;
 	}
 
