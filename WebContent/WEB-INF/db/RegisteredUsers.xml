@@ -1,0 +1,68 @@
+<!-- SOA Solutions -->
+<RegisteredUsers>
+   <Entry>
+      <Login>
+         <_uid>001</_uid>
+         <_pwd>001</_pwd>
+         <ShortKey>001-manager</ShortKey>
+      </Login>
+      <Details>
+        <LastName>Nima</LastName>
+        <FirstName>Nishad</FirstName>
+        <Role>manager</Role>
+        <Department>HR</Department>
+      </Details>
+   </Entry>
+   <Entry>
+      <Login>
+         <_uid>002</_uid>
+         <_pwd>002</_pwd>
+         <ShortKey>002-reviewer</ShortKey>
+      </Login>
+      <Details>
+        <LastName>Chopra</LastName>
+        <FirstName>Mimi</FirstName>
+        <Role>reviewer</Role>
+        <Department>AIMS Project</Department>
+      </Details>
+   </Entry>
+   <Entry>
+      <Login>
+         <_uid>003</_uid>
+         <_pwd>003</_pwd>
+         <ShortKey>003-reviewer</ShortKey>
+      </Login>
+      <Details>
+       <LastName>Danks</LastName>
+        <FirstName>Tara</FirstName>
+        <Role>reviewer</Role>
+        <Department>AIMS Project</Department>
+      </Details>
+   </Entry>
+   <Entry>
+      <Login>
+         <_uid>004</_uid>
+         <_pwd>004</_pwd>
+         <ShortKey>004-reviewer</ShortKey>
+      </Login>
+      <Details>
+        <LastName>Zhang</LastName>
+        <FirstName>Dang</FirstName>
+        <Role>reviewer</Role>
+        <Department>SAMBA Project</Department>
+      </Details>
+   </Entry>
+   <Entry>
+      <Login>
+         <_uid>005</_uid>
+         <_pwd>005</_pwd>
+         <ShortKey>005-reviewer</ShortKey>
+      </Login>
+      <Details>
+        <LastName>Jones</LastName>
+        <FirstName>Henry</FirstName>
+        <Role>reviewer</Role>
+        <Department>SAMBA Project</Department>
+      </Details>
+   </Entry>
+</RegisteredUsers>
