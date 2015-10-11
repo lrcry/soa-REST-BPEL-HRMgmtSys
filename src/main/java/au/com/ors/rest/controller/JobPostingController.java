@@ -92,9 +92,6 @@ public class JobPostingController {
 		}
 		
 		for (JobPosting jobPosting : jobPostingList) {
-<<<<<<< HEAD
-//			if (_jobId != null && jobPosting.get_jobId().equalsIgnoreCase(_jobId))
-=======
 			if (_jobId != null && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
 				continue;
 			} else if (closingTime != null && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
@@ -111,7 +108,6 @@ public class JobPostingController {
 				continue;
 			}
 			jobPostingListResult.add(jobPosting);
->>>>>>> cc7ce7e98e63e55a46b95e46ef30e4126eeb07d8
 		}
 		System.out.println(jobPostingList);
 		System.out.println(jobPostingListResult);
