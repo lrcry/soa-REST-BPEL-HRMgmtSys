@@ -90,7 +90,7 @@ public class JobPostingController {
 			jobPostingList = new ArrayList<JobPosting>();
 		}
 		for (JobPosting jobPosting : jobPostingList) {
-			if (_jobId != null && jobPosting.get_jobId().equalsIgnoreCase(_jobId))
+//			if (_jobId != null && jobPosting.get_jobId().equalsIgnoreCase(_jobId))
 		}
 		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingList);
 		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
