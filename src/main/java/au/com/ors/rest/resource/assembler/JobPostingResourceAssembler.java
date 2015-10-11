@@ -7,9 +7,7 @@ import org.springframework.stereotype.Component;
 
 import au.com.ors.rest.bean.JobPosting;
 import au.com.ors.rest.controller.JobPostingController;
-import au.com.ors.rest.controller.UserController;
 import au.com.ors.rest.resource.JobPostingResource;
-import au.com.ors.rest.resource.UserResource;
 
 @Component
 public class JobPostingResourceAssembler extends ResourceAssemblerSupport<JobPosting, JobPostingResource>{

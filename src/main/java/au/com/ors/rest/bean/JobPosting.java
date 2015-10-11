@@ -2,6 +2,8 @@ package au.com.ors.rest.bean;
 
 import java.io.Serializable;
 
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -100,5 +102,39 @@ public class JobPosting implements Serializable {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		
+		if (!StringUtils.isEmpty(_jobId)) {
+			sb.append("_jobId=").append(_jobId).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(closingTime)) {
+			sb.append("closingTime=").append(closingTime).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(salaryRate)) {
+			sb.append("salaryRate=").append(salaryRate).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(positionType)) {
+			sb.append("positionType=").append(positionType).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(location)) {
+			sb.append("location=").append(location).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(details)) {
+			sb.append("details=").append(details).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(status)) {
+			sb.append("status=").append(status).append(",");
+		}
+		
+		return sb.toString();
 	}
 }

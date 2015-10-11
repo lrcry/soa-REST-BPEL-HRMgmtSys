@@ -8,16 +8,17 @@ import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
@@ -30,10 +31,13 @@ import au.com.ors.rest.bean.JobPosting;
 import au.com.ors.rest.exceptions.DAOException;
 import au.com.ors.rest.exceptions.DAOLoadingXmlFileException;
 
-//@Component
+@Component
 public class JobPostingDAO {
 	@Resource(name = "dataProperties")
 	private Properties dataProperties;
+	
+	@Autowired
+	private ServletContext servletContext;
 
 	Document dom;
 	String dataUrl;
@@ -44,10 +48,15 @@ public class JobPostingDAO {
 	 */
 	@PostConstruct
 	public void init() throws DAOException {
+		if (servletContext == null) {
+			throw new DAOException(
+					"Cannot autowire ServletContext to JobPostingDAO when injecting JobPostingDAO into JobPostingController: NullPointerException");
+		}
+		
 		// get jobposting data file path
 		String dataPath = dataProperties
 				.getProperty("data.jobpostingdata.path");
-		dataUrl = getClass().getResource(dataPath).getFile();
+		dataUrl = servletContext.getRealPath("/WEB-INF/db/" + dataPath);
 		if (StringUtils.isEmpty(dataUrl)) {
 			throw new DAOException(
 					"Cannot find data.jobpostingdata.path in properties file.");
@@ -56,7 +65,7 @@ public class JobPostingDAO {
 		File jobPostingDataFile = new File(dataUrl);
 		if (!jobPostingDataFile.exists()) {
 			throw new DAOLoadingXmlFileException(
-					"Cannot load user XML file from path " + dataUrl);
+					"Cannot load job postings XML file from path " + dataUrl);
 		}
 
 		// open jobposting XML data via DOM parser
