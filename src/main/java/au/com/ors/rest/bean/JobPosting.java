@@ -20,7 +20,7 @@ public class JobPosting implements Serializable {
 
 	String positionType;
 
-	String loacation;
+	String location;
 
 	String details;
 	
@@ -32,7 +32,7 @@ public class JobPosting implements Serializable {
 			@JsonProperty("closingTime") String closingTime,
 			@JsonProperty("salaryRate") String salaryRate,
 			@JsonProperty("positionType") String positionType,
-			@JsonProperty("loacation") String loacation,
+			@JsonProperty("location") String location,
 			@JsonProperty("details") String details,
 			@JsonProperty("status") String status
 			) {
@@ -41,7 +41,7 @@ public class JobPosting implements Serializable {
 		this.closingTime = closingTime;
 		this.salaryRate = salaryRate;
 		this.positionType = positionType;
-		this.loacation = loacation;
+		this.location = location;
 		this.details = details;
 		this.status = status;
 	}
@@ -78,12 +78,12 @@ public class JobPosting implements Serializable {
 		this.positionType = positionType;
 	}
 
-	public String getLoacation() {
-		return loacation;
+	public String getLocation() {
+		return location;
 	}
 
-	public void setLoacation(String loacation) {
-		this.loacation = loacation;
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getDetails() {
