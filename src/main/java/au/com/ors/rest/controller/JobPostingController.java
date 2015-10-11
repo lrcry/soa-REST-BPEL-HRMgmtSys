@@ -124,8 +124,6 @@ public class JobPostingController {
 			}
 			jobPostingListResult.add(jobPosting);
 		}
-		System.out.println(jobPostingList);
-		System.out.println(jobPostingListResult);
 		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingListResult);
 		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
 	}
