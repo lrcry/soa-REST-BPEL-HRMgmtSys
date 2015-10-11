@@ -58,7 +58,15 @@ public class JobPostingController {
 	
 	@RequestMapping(method = RequestMethod.PUT)
 	@ResponseBody
-	public ResponseEntity<JobPostingResource> updateJobPosting(JobPosting jobPosting) throws JobPostingNotFoundException {
+	public ResponseEntity<JobPostingResource> updateJobPosting(
+			@RequestParam(name = "_jobId") String _jobId,
+			@RequestParam(name = "closingTime") String closingTime,
+			@RequestParam(name = "salaryRate") String salaryRate,
+			@RequestParam(name = "positionType") String positionType,
+			@RequestParam(name = "location") String location,
+			@RequestParam(name = "details") String details,
+			@RequestParam(name = "status") String status) throws JobPostingNotFoundException, TransformerException {
+		JobPosting jobPosting = new JobPosting(_jobId, closingTime, salaryRate, positionType, location, details, status);
 		JobPosting jobPostingResult = jobPostingDAO.update(jobPosting);
 		if (jobPostingResult == null) {
 			throw new JobPostingNotFoundException("jobPosting with _jobid=" + jobPosting.get_jobId() + " not found in database.");
@@ -69,10 +77,20 @@ public class JobPostingController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<List<JobPostingResource>>  getJobPostings() {
+	public ResponseEntity<List<JobPostingResource>>  getJobPostings(
+			@RequestParam(name = "_jobId") String _jobId,
+			@RequestParam(name = "closingTime") String closingTime,
+			@RequestParam(name = "salaryRate") String salaryRate,
+			@RequestParam(name = "positionType") String positionType,
+			@RequestParam(name = "location") String location,
+			@RequestParam(name = "details") String details,
+			@RequestParam(name = "status") String status) {
 		List<JobPosting> jobPostingList = jobPostingDAO.findAll();
 		if (jobPostingList == null) {
 			jobPostingList = new ArrayList<JobPosting>();
+		}
+		for (JobPosting jobPosting : jobPostingList) {
+			if (_jobId != null && jobPosting.get_jobId().equalsIgnoreCase(_jobId))
 		}
 		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingList);
 		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);

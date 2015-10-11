@@ -91,6 +91,7 @@ public class JobPostingDAO {
 			}
 			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null);
 			NodeList attributeList = node.getChildNodes();
+			boolean idCheck = false;
 			for (int j = 0; j < attributeList.getLength(); ++j) {
 				Node currentNode = attributeList.item(j);
 				
@@ -98,27 +99,28 @@ public class JobPostingDAO {
 					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
 						if (currentNode.getTextContent().equalsIgnoreCase(uid)) {
 							jobPosting.set_jobId(currentNode.getTextContent());
-						} else {
-							continue;
-						}
-					} else if (currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
+							idCheck = true;
+						} 
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
 						jobPosting.setClosingTime(currentNode.getTextContent());
-					} else if (currentNode.getNodeName().equalsIgnoreCase("salaryRate")) {
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("salaryRate")) {
 						jobPosting.setSalaryRate(currentNode.getTextContent());
-					} else if (currentNode.getNodeName().equalsIgnoreCase("positionType")) {
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("positionType")) {
 						jobPosting.setPositionType(currentNode.getTextContent());
-					} else if (currentNode.getNodeName().equalsIgnoreCase("location")) {
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("location")) {
 						jobPosting.setLocation(currentNode.getTextContent());
-					} else if (currentNode.getNodeName().equalsIgnoreCase("details")) {
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("details")) {
 						jobPosting.setDetails(currentNode.getTextContent());
-					} else if (currentNode.getNodeName().equalsIgnoreCase("status")) {
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("status")) {
 						jobPosting.setStatus(currentNode.getTextContent());
 					}
 					
-				}
-				if (jobPosting.get_jobId() != null) {
-					return jobPosting;
-				}
+				}	
+				
+			}
+			idCheck = false;
+			if (jobPosting.get_jobId() != null) {
+				return jobPosting;
 			}
 		}
 		return null;
@@ -135,9 +137,10 @@ public class JobPostingDAO {
 				continue;
 			}
 			NodeList attributeList = node.getChildNodes();
+			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null);
 			for (int j = 0; j < attributeList.getLength(); ++j) {
 				Node currentNode = attributeList.item(j);
-				JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null);
+				
 				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
 					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
 						jobPosting.set_jobId(currentNode.getTextContent());
@@ -156,9 +159,9 @@ public class JobPostingDAO {
 					}
 					
 				}
-				if (jobPosting.get_jobId() != null) {
-					jobPostingList.add(jobPosting);
-				}
+			}
+			if (jobPosting.get_jobId() != null) {
+				jobPostingList.add(jobPosting);
 			}
 		}
 		return jobPostingList;
@@ -203,8 +206,51 @@ public class JobPostingDAO {
 		return jobPosting;
 	}
 
-	public JobPosting update(JobPosting jobPosting) {
+	public JobPosting update(JobPosting jobPosting) throws TransformerException {
 		// TODO Auto-generated method stub
+		Element rootElement = dom.getDocumentElement();
+		NodeList nodeList = rootElement.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); ++i) {
+			Node node = nodeList.item(i);
+			if (!node.getNodeName().equalsIgnoreCase("JobPosting")) {
+				continue;
+			}
+			NodeList attributeList = node.getChildNodes();
+			boolean idCheck = false;
+			for (int j = 0; j < attributeList.getLength(); ++j) {
+				Node currentNode = attributeList.item(j);
+				
+				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
+						if (currentNode.getTextContent().equalsIgnoreCase(jobPosting.get_jobId())) {
+							idCheck = true;
+						}
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
+						currentNode.setTextContent(jobPosting.getClosingTime());
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("salaryRate")) {
+						currentNode.setTextContent(jobPosting.getSalaryRate());
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("positionType")) {
+						currentNode.setTextContent(jobPosting.getPositionType());
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("location")) {
+						currentNode.setTextContent(jobPosting.getLocation());
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("details")) {
+						currentNode.setTextContent(jobPosting.getDetails());
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("status")) {
+						currentNode.setTextContent(jobPosting.getStatus());
+					}
+					
+				}	
+			}
+			idCheck = false;
+		}
+		if (jobPosting.get_jobId() != null) {
+			DOMSource source = new DOMSource(dom);
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			StreamResult result = new StreamResult(dataUrl);
+			transformer.transform(source, result);
+			return jobPosting;
+		}
 		return null;
 	}
 
