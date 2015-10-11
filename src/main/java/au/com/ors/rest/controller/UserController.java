@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,7 +81,7 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/{_uid}", method = RequestMethod.GET)
 	@ResponseBody
-	public HttpEntity<UserResource> usersById(
+	public HttpEntity<UserResource> userById(
 			@PathVariable(value = "_uid") String _uid)
 			throws UserNotFoundException {
 		User userById = userDao.findByUid(_uid);
