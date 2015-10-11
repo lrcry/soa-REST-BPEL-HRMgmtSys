@@ -78,21 +78,44 @@ public class JobPostingController {
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<List<JobPostingResource>>  getJobPostings(
-			@RequestParam(name = "_jobId") String _jobId,
-			@RequestParam(name = "closingTime") String closingTime,
-			@RequestParam(name = "salaryRate") String salaryRate,
-			@RequestParam(name = "positionType") String positionType,
-			@RequestParam(name = "location") String location,
-			@RequestParam(name = "details") String details,
-			@RequestParam(name = "status") String status) {
+			@RequestParam(name = "_jobId" , required = false) String _jobId,
+			@RequestParam(name = "closingTime" , required = false) String closingTime,
+			@RequestParam(name = "salaryRate" , required = false) String salaryRate,
+			@RequestParam(name = "positionType" , required = false) String positionType,
+			@RequestParam(name = "location" , required = false) String location,
+			@RequestParam(name = "details" , required = false) String details,
+			@RequestParam(name = "status" , required = false) String status) {
 		List<JobPosting> jobPostingList = jobPostingDAO.findAll();
+		List<JobPosting> jobPostingListResult = new ArrayList<JobPosting>();
 		if (jobPostingList == null) {
 			jobPostingList = new ArrayList<JobPosting>();
 		}
+		
 		for (JobPosting jobPosting : jobPostingList) {
+<<<<<<< HEAD
 //			if (_jobId != null && jobPosting.get_jobId().equalsIgnoreCase(_jobId))
+=======
+			if (_jobId != null && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+				continue;
+			} else if (closingTime != null && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
+				continue;
+			} else if (salaryRate != null && !jobPosting.getSalaryRate().equalsIgnoreCase(salaryRate)) {
+				continue;
+			} else if (positionType != null && !jobPosting.getPositionType().equalsIgnoreCase(positionType)) {
+				continue;
+			} else if (location != null && !jobPosting.getLocation().equalsIgnoreCase(location)) {
+				continue;
+			} else if (details != null && !jobPosting.getDetails().equalsIgnoreCase(details)) {
+				continue;
+			} else if (status != null && !jobPosting.getStatus().equalsIgnoreCase(status)) {
+				continue;
+			}
+			jobPostingListResult.add(jobPosting);
+>>>>>>> cc7ce7e98e63e55a46b95e46ef30e4126eeb07d8
 		}
-		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingList);
+		System.out.println(jobPostingList);
+		System.out.println(jobPostingListResult);
+		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingListResult);
 		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
 	}
 	
