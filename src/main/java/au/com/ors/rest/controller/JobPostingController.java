@@ -24,7 +24,7 @@ import au.com.ors.rest.exceptions.JobPostingNotFoundException;
 import au.com.ors.rest.resource.JobPostingResource;
 import au.com.ors.rest.resource.assembler.JobPostingResourceAssembler;
 
-@Controller
+//@Controller
 @RequestMapping(value = "/jobPostings")
 public class JobPostingController {
 	@Autowired

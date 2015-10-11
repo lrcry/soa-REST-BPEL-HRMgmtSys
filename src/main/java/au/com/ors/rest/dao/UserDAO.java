@@ -8,14 +8,15 @@ import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import au.com.ors.rest.bean.User;
 import au.com.ors.rest.dao.xmlhandler.UserSAXHandler;
@@ -37,6 +38,9 @@ public class UserDAO {
 
 	private List<User> usersList = new ArrayList<>();
 
+	@Autowired
+	ServletContext servletContext;
+
 	/**
 	 * UserDAO initialization to read the XML into a list<br/>
 	 * 
@@ -44,18 +48,27 @@ public class UserDAO {
 	 */
 	@PostConstruct
 	public void init() throws DAOException {
-		// get user data file path
+		File userDataFile = null;
+		String dataUrl = null;
 		String dataPath = dataProperties.getProperty("data.userdata.path");
-		String dataUrl = getClass().getResource(dataPath).getFile();
-		if (StringUtils.isEmpty(dataUrl)) {
+		if (servletContext == null) {
 			throw new DAOException(
-					"Cannot find data.userdata.path in properties file.");
-		}
+					"Cannot autowire ServletContext to UserDAO when injecting UserDAO into UserController: NullPointerException");
+		} else {
+			System.out.println("Hola!");
+			dataUrl = servletContext.getRealPath("/WEB-INF/db/" + dataPath);
 
-		File userDataFile = new File(dataUrl);
-		if (!userDataFile.exists()) {
-			throw new DAOLoadingXmlFileException(
-					"Cannot load user XML file from path " + dataUrl);
+			if (StringUtils.isEmpty(dataUrl)) {
+				throw new DAOException(
+						"Cannot find data.userdata.path in properties file.");
+			}
+
+			userDataFile = new File(dataUrl);
+
+			if (!userDataFile.exists()) {
+				throw new DAOLoadingXmlFileException(
+						"Cannot load user XML file from path " + dataUrl);
+			}
 		}
 
 		// open user XML data via SAX parser
@@ -119,7 +132,7 @@ public class UserDAO {
 	 */
 	public List<User> findBySearchDepartment(String department) {
 		List<User> userWithDept = new ArrayList<>();
-		
+
 		for (User user : usersList) {
 			if (StringUtils.substringMatch(user.getDepartment(), 0, department)) {
 				userWithDept.add(user);

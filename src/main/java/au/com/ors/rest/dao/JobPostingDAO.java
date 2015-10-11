@@ -30,7 +30,7 @@ import au.com.ors.rest.bean.JobPosting;
 import au.com.ors.rest.exceptions.DAOException;
 import au.com.ors.rest.exceptions.DAOLoadingXmlFileException;
 
-@Component
+//@Component
 public class JobPostingDAO {
 	@Resource(name = "dataProperties")
 	private Properties dataProperties;
