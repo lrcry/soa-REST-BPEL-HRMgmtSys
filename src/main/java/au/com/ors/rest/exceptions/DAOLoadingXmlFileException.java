@@ -1,5 +1,11 @@
 package au.com.ors.rest.exceptions;
 
+/**
+ * DAO loading xml data file exception<br/>
+ * 
+ * @author hansmong
+ *
+ */
 public class DAOLoadingXmlFileException extends DAOException {
 
 	/**
@@ -10,7 +16,7 @@ public class DAOLoadingXmlFileException extends DAOException {
 	public DAOLoadingXmlFileException() {
 		super();
 	}
-	
+
 	public DAOLoadingXmlFileException(String msg) {
 		super(msg);
 	}
