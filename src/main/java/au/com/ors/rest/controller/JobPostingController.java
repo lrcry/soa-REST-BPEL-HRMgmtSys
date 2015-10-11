@@ -11,6 +11,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,19 +93,33 @@ public class JobPostingController {
 		}
 		
 		for (JobPosting jobPosting : jobPostingList) {
-			if (_jobId != null && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+			if (!StringUtils.isEmpty(_jobId) && StringUtils.isEmpty(jobPosting.get_jobId())) {
 				continue;
-			} else if (closingTime != null && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
+			} else if (!StringUtils.isEmpty(closingTime) && StringUtils.isEmpty(jobPosting.getClosingTime())) {
 				continue;
-			} else if (salaryRate != null && !jobPosting.getSalaryRate().equalsIgnoreCase(salaryRate)) {
+			} else if (!StringUtils.isEmpty(salaryRate) && StringUtils.isEmpty(jobPosting.getSalaryRate())) {
 				continue;
-			} else if (positionType != null && !jobPosting.getPositionType().equalsIgnoreCase(positionType)) {
+			} else if (!StringUtils.isEmpty(positionType) && StringUtils.isEmpty(jobPosting.getPositionType())) {
 				continue;
-			} else if (location != null && !jobPosting.getLocation().equalsIgnoreCase(location)) {
+			} else if (!StringUtils.isEmpty(location) && StringUtils.isEmpty(jobPosting.getLocation())) {
 				continue;
-			} else if (details != null && !jobPosting.getDetails().equalsIgnoreCase(details)) {
+			} else if (!StringUtils.isEmpty(details) && StringUtils.isEmpty(jobPosting.getDetails())) {
 				continue;
-			} else if (status != null && !jobPosting.getStatus().equalsIgnoreCase(status)) {
+			} else if (!StringUtils.isEmpty(status) && StringUtils.isEmpty(jobPosting.getStatus())) {
+				continue;
+			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+				continue;
+			} else if (!StringUtils.isEmpty(closingTime) && !StringUtils.isEmpty(jobPosting.getClosingTime()) && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
+				continue;
+			} else if (!StringUtils.isEmpty(salaryRate) && !StringUtils.isEmpty(jobPosting.getSalaryRate()) && !jobPosting.getSalaryRate().equalsIgnoreCase(salaryRate)) {
+				continue;
+			} else if (!StringUtils.isEmpty(positionType) && !StringUtils.isEmpty(jobPosting.getPositionType()) && !jobPosting.getPositionType().equalsIgnoreCase(positionType)) {
+				continue;
+			} else if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(jobPosting.getLocation()) && !jobPosting.getLocation().equalsIgnoreCase(location)) {
+				continue;
+			} else if (!StringUtils.isEmpty(details) && !StringUtils.isEmpty(jobPosting.getDetails()) && !jobPosting.getDetails().equalsIgnoreCase(details)) {
+				continue;
+			} else if (!StringUtils.isEmpty(status) && !StringUtils.isEmpty(jobPosting.getStatus()) && !jobPosting.getStatus().equalsIgnoreCase(status)) {
 				continue;
 			}
 			jobPostingListResult.add(jobPosting);
