@@ -1,6 +1,7 @@
 package au.com.ors.rest.controller;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
@@ -419,6 +420,51 @@ public class JobAppController {
 	/*************************************************************************************
 	 * DELETE methods
 	 *************************************************************************************/
+	/**
+	 * Candidate archives its application<br/>
+	 * 
+	 * @param _appId
+	 *            application ID
+	 * @return a HATEOAS application object
+	 * @throws JobApplicationNotFoundException
+	 * @throws JobAppStatusCannotModifyException
+	 */
+	@RequestMapping(method = RequestMethod.DELETE)
+	@ResponseBody
+	public ResponseEntity<JobApplicationResource> archiveApplication(
+			@RequestParam(name = "_appId") String _appId)
+			throws JobApplicationNotFoundException,
+			JobAppStatusCannotModifyException {
+		// check application existence
+		JobApplication app = jobAppDao.findById(_appId);
+		if (app == null) {
+			throw new JobApplicationNotFoundException(
+					"Job application with _appId=" + _appId
+							+ " not found in database, you cannot archive it");
+		}
+
+		// check application status
+		String appStatus = app.getStatus();
+		if (appStatus.equals(JobAppStatus.APP_INTERVIEW_PASSED.name())
+				|| appStatus.equals(JobAppStatus.APP_INTERVIEW_FAILED.name())
+				|| appStatus.equals(JobAppStatus.APP_REJECTED_BY_CANDIDATE
+						.name())
+				|| appStatus.equals(JobAppStatus.APP_NOT_SHORTLISTED.name())
+				|| appStatus.equals(JobAppStatus.APP_CANCELLED)) {
+			throw new JobAppStatusCannotModifyException(
+					"Job application status is " + appStatus
+							+ ", cannot be archived yet");
+		}
+
+		app.setStatus(JobAppStatus.APP_ARCHIVED.name());
+		jobAppDao.update(app);
+		
+		JobApplicationResource updatedAppResource = appResourceAssembler
+				.toResource(app);
+
+		return new ResponseEntity<JobApplicationResource>(updatedAppResource,
+				HttpStatus.OK);
+	}
 
 	/*************************************************************************************
 	 * Exception handler

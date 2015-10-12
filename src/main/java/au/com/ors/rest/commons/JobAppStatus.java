@@ -13,11 +13,11 @@ public enum JobAppStatus {
 	APP_REVIEWED, 
 	APP_SHORTLISTED, 
 	APP_ACCEPTED_BY_CANDIDATE,
-	APP_INTERVIEW_PASSED,
-	APP_INTERVIEW_FAILED,
-	APP_REJECTED_BY_CANDIDATE,
-	APP_NOT_SHORTLISTED,
-	APP_CANCELLED,
+	APP_INTERVIEW_PASSED, // can archive
+	APP_INTERVIEW_FAILED, // can archive
+	APP_REJECTED_BY_CANDIDATE, // can archive
+	APP_NOT_SHORTLISTED, // can archive
+	APP_CANCELLED, // can archive
 	APP_ARCHIVED;
 	
 	public static boolean contains(String status) {
