@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import au.com.ors.rest.bean.JobApplication;
 import au.com.ors.rest.commons.JobAppStatus;
 import au.com.ors.rest.dao.JobAppDAO;
+import au.com.ors.rest.dao.JobPostingDAO;
+import au.com.ors.rest.exceptions.JobAppMalformatException;
+import au.com.ors.rest.exceptions.JobAppStatusCannotModifyException;
 import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
 import au.com.ors.rest.resource.JobApplicationResource;
 import au.com.ors.rest.resource.assembler.JobApplicationResourceAssembler;
@@ -27,6 +30,9 @@ import au.com.ors.rest.resource.assembler.JobApplicationResourceAssembler;
 public class JobAppController {
 	@Autowired
 	JobAppDAO jobAppDao;
+
+	@Autowired
+	JobPostingDAO jobDao;
 
 	@Autowired
 	JobApplicationResourceAssembler appResourceAssembler;
@@ -101,6 +107,17 @@ public class JobAppController {
 	/*************************************************************************************
 	 * POST methods
 	 *************************************************************************************/
+	/**
+	 * 
+	 * @param _jobId
+	 * @param driverLicenseNumber
+	 * @param fullName
+	 * @param postCode
+	 * @param textCoverLetter
+	 * @param textBriefResume
+	 * @return
+	 * @throws JobAppMalformatException
+	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> createApplication(
@@ -109,10 +126,18 @@ public class JobAppController {
 			@RequestParam(name = "fullName", required = true) String fullName,
 			@RequestParam(name = "postCode", required = true) String postCode,
 			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
-			@RequestParam(name = "textBriefResume", required = false) String textBriefResume) {
+			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
+			throws JobAppMalformatException {
 
 		// set application object
 		JobApplication application = new JobApplication();
+
+		if (StringUtils.isEmpty(_jobId)) {
+			throw new JobAppMalformatException(
+					"Job application malformed: jobId required");
+		}
+
+		// TODO check create job application information
 
 		application.set_appId(UUID.randomUUID().toString());
 		application.set_jobId(_jobId);
@@ -145,6 +170,29 @@ public class JobAppController {
 	/*************************************************************************************
 	 * PUT methods
 	 *************************************************************************************/
+
+	/**
+	 * Update an application by its candidate<br/>
+	 * 
+	 * @param _appId
+	 *            application ID
+	 * @param _jobId
+	 *            job ID this application is for
+	 * @param driverLicenseNumber
+	 *            candidate's driver license
+	 * @param fullName
+	 *            candidate's full name
+	 * @param postCode
+	 *            candidate's post code of address
+	 * @param textCoverLetter
+	 *            candidate's cover letter in text (not required)
+	 * @param textBriefResume
+	 *            candidate's brief resume in text (not required)
+	 * @return a HATEOAS application after updated
+	 * @throws JobApplicationNotFoundException
+	 * @throws JobAppStatusCannotModifyException
+	 * @throws JobAppMalformatException
+	 */
 	@RequestMapping(value = "/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> updateApplication(
@@ -154,14 +202,91 @@ public class JobAppController {
 			@RequestParam(name = "fullName", required = true) String fullName,
 			@RequestParam(name = "postCode", required = true) String postCode,
 			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
-			@RequestParam(name = "textBriefResume", required = false) String textBriefResume) {
+			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
+			throws JobApplicationNotFoundException,
+			JobAppStatusCannotModifyException, JobAppMalformatException {
 		// check if the application exist
+		JobApplication application = jobAppDao.findById(_appId);
+
+		if (application == null) {
+			throw new JobApplicationNotFoundException(
+					"Job application with _appId=" + _appId
+							+ " not found in database.");
+		}
 
 		// check if the application can be updated in current status
+		String status = application.getStatus();
+		if (StringUtils.isEmpty(status)
+				|| !status
+						.equalsIgnoreCase(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED)) {
+			// only in submitted_but_not_processed status the application can be
+			// updated
+			throw new JobAppStatusCannotModifyException(
+					"Job application with _appId=" + _appId
+							+ " is in the status of: '" + status
+							+ "', and cannot be modified currently.");
+		}
 
 		// check if the application has been modified, only if so do update
 		// method, otherwise return the application directly
+		if (StringUtils.isEmpty(_jobId)
+				|| StringUtils.isEmpty(application.get_jobId())
+				|| !_jobId.equals(application.get_jobId())) {
+			// _jobId is not permitted to be updated
+			throw new JobAppMalformatException(
+					"Job application malformat on _jobId: get from database ["
+							+ application.get_jobId() + "], parameter ["
+							+ _jobId + "]");
+		}
+
+		List<Boolean> needUpdateInfoList = new ArrayList<>();
+
+		// check required information (cannot be null or empty)
+		String appDriverLicenseNumber = application.getDriverLicenseNumber();
+		boolean needUpdateDriverLicense = false;
+		if (checkApplicationRequiredInfoEmpty(appDriverLicenseNumber,
+				driverLicenseNumber)) {
+			throw new JobAppMalformatException(
+					"Job application malformat on driver license number: get from database ["
+							+ appDriverLicenseNumber + "], parameter ["
+							+ driverLicenseNumber + "]");
+		} else {
+			needUpdateDriverLicense = checkNeedUpdate(appDriverLicenseNumber,
+					driverLicenseNumber);
+			needUpdateInfoList.add(needUpdateDriverLicense);
+			if (needUpdateDriverLicense) {
+				application.setDriverLicenseNumber(appDriverLicenseNumber);
+			}
+		}
+
+		// TODO complete check of required info
+
+		// TODO check not-required information
 
 		return null;
+	}
+
+	/**
+	 * Check if info of an application is need and can be updated<br/>
+	 * 
+	 * @param fromDatabase
+	 * @param fromParam
+	 * @return
+	 */
+	private boolean checkApplicationRequiredInfoEmpty(String fromDatabase,
+			String fromParam) {
+		return StringUtils.isEmpty(fromDatabase) // from database not empty
+				|| StringUtils.isEmpty(fromParam); // from param not empty
+	}
+
+	/**
+	 * Check if info of an application is needed to be updated<br/>
+	 * 
+	 * @param fromDatabase
+	 * @param fromParam
+	 * @return
+	 */
+	private boolean checkNeedUpdate(String fromDatabase, String fromParam) {
+		return !fromDatabase.equals(fromParam);
 	}
 }
