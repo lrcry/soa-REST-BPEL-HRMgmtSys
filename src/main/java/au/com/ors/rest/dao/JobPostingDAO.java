@@ -128,7 +128,7 @@ public class JobPostingDAO {
 				
 			}
 			idCheck = false;
-			if (jobPosting.get_jobId() != null) {
+			if (!StringUtils.isEmpty(jobPosting.get_jobId())) {
 				return jobPosting;
 			}
 		}
@@ -169,7 +169,7 @@ public class JobPostingDAO {
 					
 				}
 			}
-			if (jobPosting.get_jobId() != null) {
+			if (!StringUtils.isEmpty(jobPosting.get_jobId())) {
 				jobPostingList.add(jobPosting);
 			}
 		}
