@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -184,7 +183,7 @@ public class JobAppController {
 		application.setTextBriefResume(textBriefResume);
 
 		// after the create, status becomes submit but not processed yet
-		application.setStatus(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED);
+		application.setStatus(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED.name());
 
 		JobApplication createdApp = jobAppDao.create(application);
 
@@ -246,7 +245,8 @@ public class JobAppController {
 		String status = application.getStatus();
 		if (StringUtils.isEmpty(status)
 				|| !status
-						.equalsIgnoreCase(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED)) {
+						.equalsIgnoreCase(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED
+								.name())) {
 			// only in submitted_but_not_processed status the application can be
 			// updated
 			throw new JobAppStatusCannotModifyException(
@@ -366,11 +366,67 @@ public class JobAppController {
 		return new ResponseEntity<JobApplicationResource>(updatedAppResource,
 				HttpStatus.OK);
 	}
-	
-	
-	public ResponseEntity<JobApplicationResource> updateJobStatus() {
-		return null;
+
+	/**
+	 * Update application status<br/>
+	 * 
+	 * @param _appId
+	 *            application ID
+	 * @param status
+	 *            status to be updated
+	 * @return a HATEOAS application object
+	 * @throws JobApplicationNotFoundException
+	 * @throws JobAppMalformatException
+	 */
+	@RequestMapping(value = "/status/{_appId}")
+	@ResponseBody
+	public ResponseEntity<JobApplicationResource> updateJobStatus(
+			@PathVariable(value = "_appId") String _appId,
+			@RequestParam(name = "status") String status)
+			throws JobApplicationNotFoundException, JobAppMalformatException {
+		// check application existence
+		JobApplication app = jobAppDao.findById(_appId);
+		if (app == null) {
+			throw new JobApplicationNotFoundException(
+					"Job application with _appId="
+							+ _appId
+							+ " not found in database, you cannot update its status");
+		}
+
+		// check input status
+		if (StringUtils.isEmpty(status)) {
+			throw new JobAppMalformatException(
+					"Job application update status: required input status");
+		}
+
+		if (!JobAppStatus.contains(status)) {
+			throw new JobAppMalformatException(
+					"Job application update status invalid");
+		}
+
+		if (!status.equals(app.getStatus())) { // need update
+			app.setStatus(status);
+			jobAppDao.update(app);
+		}
+
+		JobApplicationResource updatedAppResource = appResourceAssembler
+				.toResource(app);
+
+		return new ResponseEntity<JobApplicationResource>(updatedAppResource,
+				HttpStatus.OK);
 	}
+
+	/*************************************************************************************
+	 * DELETE methods
+	 *************************************************************************************/
+
+	/*************************************************************************************
+	 * Exception handler
+	 *************************************************************************************/
+
+	/*************************************************************************************
+	 * General private methods used in controller
+	 *************************************************************************************/
 
 	/**
 	 * Check if info of an application is need and can be updated<br/>
