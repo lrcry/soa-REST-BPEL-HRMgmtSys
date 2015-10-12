@@ -138,7 +138,7 @@ public class JobAppController {
 			throw new JobAppMalformatException(
 					"Job application malformed: _jobId required");
 		}
-		
+
 		JobPosting jobFound = jobDao.findByUid(_jobId);
 		if (jobFound == null) {
 			throw new JobAppMalformatException(
@@ -149,12 +149,12 @@ public class JobAppController {
 			throw new JobAppMalformatException(
 					"Job application malformed: driverLicenseNumber required");
 		}
-		
+
 		if (StringUtils.isEmpty(fullName)) {
 			throw new JobAppMalformatException(
 					"Job application malformed: fullName required");
 		}
-		
+
 		if (StringUtils.isEmpty(postCode)) {
 			throw new JobAppMalformatException(
 					"Job application malformed: postCode required");
@@ -263,6 +263,8 @@ public class JobAppController {
 		List<Boolean> needUpdateInfoList = new ArrayList<>();
 
 		// check required information (cannot be null or empty)
+
+		// check driver license
 		String appDriverLicenseNumber = application.getDriverLicenseNumber();
 		boolean needUpdateDriverLicense = false;
 		if (checkApplicationRequiredInfoEmpty(appDriverLicenseNumber,
@@ -276,15 +278,84 @@ public class JobAppController {
 					driverLicenseNumber);
 			needUpdateInfoList.add(needUpdateDriverLicense);
 			if (needUpdateDriverLicense) {
-				application.setDriverLicenseNumber(appDriverLicenseNumber);
+				application.setDriverLicenseNumber(driverLicenseNumber);
 			}
 		}
 
-		// TODO complete check of required info
+		// check full name
+		String appFullName = application.getFullName();
+		boolean needUpdateFullName = false;
+		if (checkApplicationRequiredInfoEmpty(appFullName, fullName)) {
+			throw new JobAppMalformatException(
+					"Job application malformat on full name: get from database ["
+							+ appFullName + "], parameter [" + fullName + "]");
+		} else {
+			needUpdateFullName = checkNeedUpdate(appFullName, fullName);
+			needUpdateInfoList.add(needUpdateFullName);
+			if (needUpdateFullName) {
+				application.setFullName(fullName);
+			}
+		}
 
-		// TODO check not-required information
+		// check post code
+		String appPostCode = application.getPostCode();
+		boolean needUpdatePostCode = false;
+		if (checkApplicationRequiredInfoEmpty(appPostCode, postCode)) {
+			throw new JobAppMalformatException(
+					"Job application malformat on post code: get from database ["
+							+ appPostCode + "], parameter [" + postCode + "]");
+		} else {
+			needUpdatePostCode = checkNeedUpdate(appPostCode, postCode);
+			needUpdateInfoList.add(needUpdatePostCode);
+			if (needUpdatePostCode) {
+				application.setPostCode(postCode);
+			}
+		}
 
-		return null;
+		// check not-required information
+		
+		// check text cover letter
+		if (StringUtils.isEmpty(textCoverLetter)) {
+			textCoverLetter = "";
+		}
+		
+		String appTextCoverLetter = application.getTextCoverLetter();
+		boolean needUpdateTextCoverLetter = checkNeedUpdate(appTextCoverLetter, textCoverLetter);
+		needUpdateInfoList.add(needUpdateTextCoverLetter);
+		if (needUpdateTextCoverLetter) {
+			application.setTextCoverLetter(textCoverLetter);
+		}
+		
+		// check text brief resume
+		if (StringUtils.isEmpty(textBriefResume)) {
+			textBriefResume = "";
+		}
+		
+		String appTextBriefResume = application.getTextBriefResume();
+		boolean needUpdateTextBriefResume = checkNeedUpdate(appTextBriefResume, textBriefResume);
+		needUpdateInfoList.add(needUpdateTextBriefResume);
+		if (needUpdateTextBriefResume) {
+			application.setTextBriefResume(textBriefResume);
+		}
+		
+		// check need update flag to decide whether do writing update into XML
+		boolean needWriteUpdate = false;
+		for (boolean need : needUpdateInfoList) {
+			if (need) {
+				needWriteUpdate = true;
+				break;
+			}
+		}
+		
+		if (needWriteUpdate) {
+			jobAppDao.update(application);
+		}
+		
+		JobApplicationResource updatedAppResource = appResourceAssembler
+				.toResource(application);
+
+		return new ResponseEntity<JobApplicationResource>(updatedAppResource,
+				HttpStatus.OK);
 	}
 
 	/**

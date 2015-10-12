@@ -12,19 +12,22 @@ public final class JobAppStatus {
 	 */
 	public static final String APP_SUBMITTED_NOT_PROCESSED = "Application submitted, but not processed yet"; // can
 																												// update
-//	public static final String APP_AUTO_PROCESSING = "Application being auto processed"; // CANNOT
-																							// update
-																							// or
-																							// archive
 
-//	public static final String APP_AUTO_PROCESS_PDV = "Application PDV check finished";
-	
-//	public static final String APP_REVIEWING = "Applicatioon being reviewed by a hiring team"; // CANNOT
+	// auto checked complete
+	public static final String APP_AUTO_PROCESSED = "Application auto check complete"; // CANNOT
+																						// update
+																						// or
+																						// archive
+
+	public static final String APP_REVIEWING = "Applicatioon being reviewed by a hiring team"; // CANNOT
 																								// update
 																								// or
 																								// archive
-	
-	public static final String APP_PROCESSING = "Application being processed"; // CANNOT update or archive
+
+	public static final String APP_REVIEWED = "Application reviewed by a hiring team";
+
+	// public static final String APP_PROCESSING =
+	// "Application being processed"; // CANNOT update or archive
 
 	/* Cannot be archived in the statuses above */
 
