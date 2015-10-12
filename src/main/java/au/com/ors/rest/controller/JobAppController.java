@@ -1,7 +1,6 @@
 package au.com.ors.rest.controller;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,9 +17,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.com.ors.rest.bean.JobApplication;
 import au.com.ors.rest.bean.JobPosting;
+import au.com.ors.rest.bean.RESTError;
+import au.com.ors.rest.commons.DAOErrorCode;
 import au.com.ors.rest.commons.JobAppStatus;
+import au.com.ors.rest.commons.RESTErrorCode;
 import au.com.ors.rest.dao.JobAppDAO;
 import au.com.ors.rest.dao.JobPostingDAO;
+import au.com.ors.rest.exceptions.DAOException;
 import au.com.ors.rest.exceptions.JobAppMalformatException;
 import au.com.ors.rest.exceptions.JobAppStatusCannotModifyException;
 import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
@@ -37,12 +40,6 @@ public class JobAppController {
 
 	@Autowired
 	JobApplicationResourceAssembler appResourceAssembler;
-
-	@SuppressWarnings("rawtypes")
-	@ExceptionHandler
-	ResponseEntity handleExceptions(Exception e) {
-		return null;
-	}
 
 	/*************************************************************************************
 	 * GET methods
@@ -458,7 +455,7 @@ public class JobAppController {
 
 		app.setStatus(JobAppStatus.APP_ARCHIVED.name());
 		jobAppDao.update(app);
-		
+
 		JobApplicationResource updatedAppResource = appResourceAssembler
 				.toResource(app);
 
@@ -469,6 +466,30 @@ public class JobAppController {
 	/*************************************************************************************
 	 * Exception handler
 	 *************************************************************************************/
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@ExceptionHandler
+	ResponseEntity handleExceptions(Exception e) {
+		ResponseEntity responseEntity = null;
+
+		RESTError error = new RESTError();
+		if (e instanceof DAOException) {
+			error.setErrCode(DAOErrorCode.DATA_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} else if (e instanceof JobApplicationNotFoundException) {
+			error.setErrCode(RESTErrorCode.JOB_APP_NOT_FOUND);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.NOT_FOUND);
+		} else if (e instanceof JobAppMalformatException
+				|| e instanceof JobAppStatusCannotModifyException) {
+			error.setErrCode(RESTErrorCode.CLIENT_BAD_REQUEST);
+			error.setErrCode(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+		}
+
+		return responseEntity;
+	}
 
 	/*************************************************************************************
 	 * General private methods used in controller

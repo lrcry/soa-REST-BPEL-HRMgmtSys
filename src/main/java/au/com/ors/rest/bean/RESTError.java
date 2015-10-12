@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author hansmong
  *
  */
-public class UserError implements Serializable {
+public class RESTError implements Serializable {
 
 	/**
 	 * 

@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.com.ors.rest.bean.User;
-import au.com.ors.rest.bean.UserError;
+import au.com.ors.rest.bean.RESTError;
 import au.com.ors.rest.commons.DAOErrorCode;
-import au.com.ors.rest.commons.UserErrorCode;
+import au.com.ors.rest.commons.RESTErrorCode;
 import au.com.ors.rest.dao.UserDAO;
 import au.com.ors.rest.exceptions.DAOException;
 import au.com.ors.rest.exceptions.UserNotFoundException;
@@ -107,14 +107,14 @@ public class UserController {
 	ResponseEntity handleExceptions(Exception e) {
 		ResponseEntity responseEntity = null;
 
-		UserError error = new UserError();
+		RESTError error = new RESTError();
 		if (e instanceof DAOException) {
 			error.setErrCode(DAOErrorCode.DATA_ERROR);
 			error.setErrMessage(e.getMessage());
 			responseEntity = new ResponseEntity(error,
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		} else if (e instanceof UserNotFoundException) {
-			error.setErrCode(UserErrorCode.USER_NOT_FOUND);
+			error.setErrCode(RESTErrorCode.USER_NOT_FOUND);
 			error.setErrMessage(e.getMessage());
 			responseEntity = new ResponseEntity(error, HttpStatus.NOT_FOUND);
 		} else {
