@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
 import au.com.ors.rest.resource.JobApplicationResource;
 import au.com.ors.rest.resource.assembler.JobApplicationResourceAssembler;
 
+@Controller
 @RequestMapping("/jobapplications")
 public class JobAppController {
 	@Autowired
@@ -376,7 +378,7 @@ public class JobAppController {
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppMalformatException
 	 */
-	@RequestMapping(value = "/status/{_appId}")
+	@RequestMapping(value = "/status/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> updateJobStatus(
 			@PathVariable(value = "_appId") String _appId,
@@ -426,10 +428,10 @@ public class JobAppController {
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppStatusCannotModifyException
 	 */
-	@RequestMapping(method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{_appId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> archiveApplication(
-			@RequestParam(name = "_appId") String _appId)
+			@PathVariable(value = "_appId") String _appId)
 			throws JobApplicationNotFoundException,
 			JobAppStatusCannotModifyException {
 		// check application existence
@@ -486,6 +488,11 @@ public class JobAppController {
 			error.setErrCode(RESTErrorCode.CLIENT_BAD_REQUEST);
 			error.setErrCode(e.getMessage());
 			responseEntity = new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+		} else {
+			error.setErrCode(RESTErrorCode.GENERAL_SERVER_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		return responseEntity;
