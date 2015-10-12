@@ -109,14 +109,21 @@ public class JobAppController {
 	 * POST methods
 	 *************************************************************************************/
 	/**
+	 * Create a new application<br/>
 	 * 
 	 * @param _jobId
+	 *            job ID which the application for
 	 * @param driverLicenseNumber
+	 *            candidate's driver license number
 	 * @param fullName
+	 *            candidate's full name
 	 * @param postCode
+	 *            candidate's post code
 	 * @param textCoverLetter
+	 *            candidate's cv in text
 	 * @param textBriefResume
-	 * @return
+	 *            candidate's resume in text
+	 * @return a HATEOAS application object with HTTP status 201 created
 	 * @throws JobAppMalformatException
 	 */
 	@RequestMapping(method = RequestMethod.POST)
@@ -313,31 +320,33 @@ public class JobAppController {
 		}
 
 		// check not-required information
-		
+
 		// check text cover letter
 		if (StringUtils.isEmpty(textCoverLetter)) {
 			textCoverLetter = "";
 		}
-		
+
 		String appTextCoverLetter = application.getTextCoverLetter();
-		boolean needUpdateTextCoverLetter = checkNeedUpdate(appTextCoverLetter, textCoverLetter);
+		boolean needUpdateTextCoverLetter = checkNeedUpdate(appTextCoverLetter,
+				textCoverLetter);
 		needUpdateInfoList.add(needUpdateTextCoverLetter);
 		if (needUpdateTextCoverLetter) {
 			application.setTextCoverLetter(textCoverLetter);
 		}
-		
+
 		// check text brief resume
 		if (StringUtils.isEmpty(textBriefResume)) {
 			textBriefResume = "";
 		}
-		
+
 		String appTextBriefResume = application.getTextBriefResume();
-		boolean needUpdateTextBriefResume = checkNeedUpdate(appTextBriefResume, textBriefResume);
+		boolean needUpdateTextBriefResume = checkNeedUpdate(appTextBriefResume,
+				textBriefResume);
 		needUpdateInfoList.add(needUpdateTextBriefResume);
 		if (needUpdateTextBriefResume) {
 			application.setTextBriefResume(textBriefResume);
 		}
-		
+
 		// check need update flag to decide whether do writing update into XML
 		boolean needWriteUpdate = false;
 		for (boolean need : needUpdateInfoList) {
@@ -346,16 +355,21 @@ public class JobAppController {
 				break;
 			}
 		}
-		
+
 		if (needWriteUpdate) {
 			jobAppDao.update(application);
 		}
-		
+
 		JobApplicationResource updatedAppResource = appResourceAssembler
 				.toResource(application);
 
 		return new ResponseEntity<JobApplicationResource>(updatedAppResource,
 				HttpStatus.OK);
+	}
+	
+	
+	public ResponseEntity<JobApplicationResource> updateJobStatus() {
+		return null;
 	}
 
 	/**
