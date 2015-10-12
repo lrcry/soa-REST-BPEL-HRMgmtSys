@@ -51,7 +51,7 @@ public class JobPostingController {
 			jobPostingResult = jobPostingDAO.create(jobPosting);
 		} catch (TransformerException e) {
 			// TODO Auto-generated catch block
-			System.out.println("exception");
+			e.printStackTrace();
 		}
 		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingResult);
 		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
