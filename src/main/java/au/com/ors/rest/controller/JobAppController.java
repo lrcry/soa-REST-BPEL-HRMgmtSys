@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.com.ors.rest.bean.JobApplication;
+import au.com.ors.rest.bean.JobPosting;
 import au.com.ors.rest.commons.JobAppStatus;
 import au.com.ors.rest.dao.JobAppDAO;
 import au.com.ors.rest.dao.JobPostingDAO;
@@ -132,12 +133,32 @@ public class JobAppController {
 		// set application object
 		JobApplication application = new JobApplication();
 
+		// check job application format
 		if (StringUtils.isEmpty(_jobId)) {
 			throw new JobAppMalformatException(
-					"Job application malformed: jobId required");
+					"Job application malformed: _jobId required");
+		}
+		
+		JobPosting jobFound = jobDao.findByUid(_jobId);
+		if (jobFound == null) {
+			throw new JobAppMalformatException(
+					"Job application malformed: job with _jobId not found in database");
 		}
 
-		// TODO check create job application information
+		if (StringUtils.isEmpty(driverLicenseNumber)) {
+			throw new JobAppMalformatException(
+					"Job application malformed: driverLicenseNumber required");
+		}
+		
+		if (StringUtils.isEmpty(fullName)) {
+			throw new JobAppMalformatException(
+					"Job application malformed: fullName required");
+		}
+		
+		if (StringUtils.isEmpty(postCode)) {
+			throw new JobAppMalformatException(
+					"Job application malformed: postCode required");
+		}
 
 		application.set_appId(UUID.randomUUID().toString());
 		application.set_jobId(_jobId);
