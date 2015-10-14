@@ -8,5 +8,6 @@
 		<postCode>2018</postCode>
 		<textCoverLetter>test text cover letter if it can run.</textCoverLetter>
 		<textBriefResume>test brief resume here</textBriefResume>
+		<status>APP_ARCHIVED</status>
 	</JobApplication>
 </JobApplications>
