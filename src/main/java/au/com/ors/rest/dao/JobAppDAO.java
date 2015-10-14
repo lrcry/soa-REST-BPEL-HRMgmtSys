@@ -32,6 +32,12 @@ import au.com.ors.rest.exceptions.DAOException;
 import au.com.ors.rest.exceptions.DAOLoadingXmlFileException;
 import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
 
+/**
+ * Job application DAO<br/>
+ * 
+ * @author hansmong
+ *
+ */
 @Component
 public class JobAppDAO {
 	@Resource(name = "dataProperties")
@@ -55,19 +61,18 @@ public class JobAppDAO {
 		}
 
 		// get jobposting data file path
-		String dataPath = dataProperties
-				.getProperty("data.jobpostingdata.path");
+		String dataPath = dataProperties.getProperty("data.jobapp.path");
 		dataUrl = servletContext.getRealPath("/WEB-INF/db/" + dataPath);
 		System.out.println("jobapp_db_path=" + dataUrl);
 		if (StringUtils.isEmpty(dataUrl)) {
 			throw new DAOException(
-					"Cannot find data.jobpostingdata.path in properties file.");
+					"Cannot find data.jobappdata.path in properties file.");
 		}
 
 		File jobPostingDataFile = new File(dataUrl);
 		if (!jobPostingDataFile.exists()) {
 			throw new DAOLoadingXmlFileException(
-					"Cannot load job postings XML file from path " + dataUrl);
+					"Cannot load job application XML file from path " + dataUrl);
 		}
 
 		// Make an instance of the DocumentBuilderFactory
@@ -110,6 +115,8 @@ public class JobAppDAO {
 						app.setTextCoverLetter(content);
 					} else if (current.getNodeName().equals("textBriefResume")) {
 						app.setTextBriefResume(content);
+					} else if (current.getNodeName().equals("status")) {
+						app.setStatus(content);
 					}
 				}
 			}
@@ -134,9 +141,12 @@ public class JobAppDAO {
 	 * @param application
 	 *            job application object
 	 * @return created job application object
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
-	public JobApplication create(JobApplication application) throws TransformerException {
+	public JobApplication create(JobApplication application)
+			throws TransformerException {
+		jobAppList.add(application);
+
 		Element root = dom.getDocumentElement();
 
 		// new jobapp node
@@ -145,25 +155,31 @@ public class JobAppDAO {
 		// jobapp info
 		Element _appIdNew = dom.createElement("_appId");
 		_appIdNew.appendChild(dom.createTextNode(application.get_appId()));
-		
+
 		Element _jobIdNew = dom.createElement("_jobId");
 		_jobIdNew.appendChild(dom.createTextNode(application.get_jobId()));
-		
+
 		Element driverLicenseNumberNew = dom
 				.createElement("driverLicenseNumber");
-		driverLicenseNumberNew.appendChild(dom.createTextNode(application.getDriverLicenseNumber()));
-		
+		driverLicenseNumberNew.appendChild(dom.createTextNode(application
+				.getDriverLicenseNumber()));
+
 		Element fullNameNew = dom.createElement("fullName");
 		fullNameNew.appendChild(dom.createTextNode(application.getFullName()));
-		
+
 		Element postCodeNew = dom.createElement("postCode");
 		postCodeNew.appendChild(dom.createTextNode(application.getPostCode()));
-		
+
 		Element textCoverLetterNew = dom.createElement("textCoverLetter");
-		textCoverLetterNew.appendChild(dom.createTextNode(application.getTextCoverLetter()));
-		
+		textCoverLetterNew.appendChild(dom.createTextNode(application
+				.getTextCoverLetter()));
+
 		Element textBriefResumeNew = dom.createElement("textBriefResume");
-		textBriefResumeNew.appendChild(dom.createTextNode(application.getTextBriefResume()));
+		textBriefResumeNew.appendChild(dom.createTextNode(application
+				.getTextBriefResume()));
+
+		Element statusNew = dom.createElement("status");
+		statusNew.appendChild(dom.createTextNode(application.getStatus()));
 
 		// append info to jobapp node
 		jobAppNew.appendChild(_appIdNew);
@@ -173,17 +189,18 @@ public class JobAppDAO {
 		jobAppNew.appendChild(postCodeNew);
 		jobAppNew.appendChild(textCoverLetterNew);
 		jobAppNew.appendChild(textBriefResumeNew);
-		
+		jobAppNew.appendChild(statusNew);
+
 		// append new node to root
 		root.appendChild(jobAppNew);
-		
+
 		// write to XML
-		DOMSource source = new DOMSource();
+		DOMSource source = new DOMSource(dom);
 		TransformerFactory tfFactory = TransformerFactory.newInstance();
 		Transformer tf = tfFactory.newTransformer();
 		StreamResult result = new StreamResult(dataUrl);
 		tf.transform(source, result);
-		
+
 		return application;
 	}
 
@@ -250,6 +267,8 @@ public class JobAppDAO {
 						current.setTextContent(application.getTextCoverLetter());
 					} else if (current.getNodeName().equals("textBriefResume")) {
 						current.setTextContent(application.getTextBriefResume());
+					} else if (current.getNodeName().equals("status")) {
+						current.setTextContent(application.getStatus());
 					}
 				}
 			}
@@ -318,5 +337,24 @@ public class JobAppDAO {
 		}
 
 		return appList;
+	}
+
+	/**
+	 * Get applications by their status<br/>
+	 * 
+	 * @param status
+	 *            application status string
+	 * @return a list of applications
+	 */
+	public List<JobApplication> findByStatus(String status) {
+		List<JobApplication> statusAppList = new ArrayList<>();
+
+		for (JobApplication app : jobAppList) {
+			if (app.getStatus().equals(status)) {
+				statusAppList.add(app);
+			}
+		}
+
+		return statusAppList;
 	}
 }

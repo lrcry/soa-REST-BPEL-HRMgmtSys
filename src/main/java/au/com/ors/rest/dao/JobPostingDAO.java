@@ -57,6 +57,7 @@ public class JobPostingDAO {
 		String dataPath = dataProperties
 				.getProperty("data.jobpostingdata.path");
 		dataUrl = servletContext.getRealPath("/WEB-INF/db/" + dataPath);
+		System.out.println("job_posting_path=" + dataUrl);
 		if (StringUtils.isEmpty(dataUrl)) {
 			throw new DAOException(
 					"Cannot find data.jobpostingdata.path in properties file.");

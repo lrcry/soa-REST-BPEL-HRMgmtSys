@@ -97,6 +97,10 @@ public class JobApplication implements Serializable {
 		this.status = status;
 	}
 	
+	public boolean equals(JobApplication app) {
+		return _appId.equals(app.get_appId());
+	}
+	
 	public String toString() {
 		StringBuilder sbUser = new StringBuilder();
 		if (!StringUtils.isEmpty(_appId)) {
@@ -126,9 +130,13 @@ public class JobApplication implements Serializable {
 		}
 
 		if (!StringUtils.isEmpty(textBriefResume)) {
-			sbUser.append("textBriefResume=true");
+			sbUser.append("textBriefResume=true").append(",");
 		} else {
-			sbUser.append("textBriefResume=false");
+			sbUser.append("textBriefResume=false").append(",");
+		}
+		
+		if (!StringUtils.isEmpty(status)) {
+			sbUser.append("status=" + status);
 		}
 
 		return sbUser.toString();

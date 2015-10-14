@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +34,12 @@ import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
 import au.com.ors.rest.resource.JobApplicationResource;
 import au.com.ors.rest.resource.assembler.JobApplicationResourceAssembler;
 
+/**
+ * Job application resource controller<br/>
+ * 
+ * @author hansmong
+ *
+ */
 @Controller
 @RequestMapping("/jobapplications")
 public class JobAppController {
@@ -60,18 +67,42 @@ public class JobAppController {
 	 */
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<List<JobApplicationResource>> jobApplications(
-			@RequestParam(name = "_jobId", required = false) String _jobId) {
-		List<JobApplication> appsList = null;
+			@RequestParam(name = "_jobId", required = false) String _jobId,
+			@RequestParam(name = "status", required = false) String status) {
+		List<JobApplication> appsList = new ArrayList<>();
+		System.out.println("status=" + status);
+		if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(status)) { // by
+																			// two
+																			// factors
+			System.out.println("getting according to two factors, jobappdao="
+					+ (jobAppDao == null));
+			List<JobApplication> appsByJobIdList = jobAppDao
+					.findByJobPostingId(_jobId);
+			if (appsByJobIdList != null) {
 
-		if (StringUtils.isEmpty(_jobId)) { // no param
-			appsList = jobAppDao.findAll();
-		} else { // with param
+				for (JobApplication app : appsByJobIdList) {
+					System.out.println("found appsbyjobid size: "
+							+ appsByJobIdList.size());
+					System.out.println("appstatus=" + app.getStatus());
+					System.out.println("hooray!");
+					if (app.getStatus().equals(status)) {
+						appsList.add(app);
+					}
+				}
+			}
+		} else if (!StringUtils.isEmpty(_jobId)) {
 			appsList = jobAppDao.findByJobPostingId(_jobId);
+		} else if (!StringUtils.isEmpty(status)) {
+			appsList = jobAppDao.findByStatus(status);
+		} else {
+			appsList = jobAppDao.findAll();
 		}
 
 		if (appsList == null) {
 			appsList = new ArrayList<>();
 		}
+
+		System.out.println("appsList size: " + appsList.size());
 
 		List<JobApplicationResource> appListResource = appResourceAssembler
 				.toResources(appsList);
@@ -112,78 +143,57 @@ public class JobAppController {
 	/**
 	 * Create a new application<br/>
 	 * 
-	 * @param _jobId
-	 *            job ID which the application for
-	 * @param driverLicenseNumber
-	 *            candidate's driver license number
-	 * @param fullName
-	 *            candidate's full name
-	 * @param postCode
-	 *            candidate's post code
-	 * @param textCoverLetter
-	 *            candidate's cv in text
-	 * @param textBriefResume
-	 *            candidate's resume in text
+	 * @param application
+	 *            application JSON object
 	 * @return a HATEOAS application object with HTTP status 201 created
 	 * @throws JobAppMalformatException
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> createApplication(
-			@RequestParam(name = "_jobId", required = true) String _jobId,
-			@RequestParam(name = "driverLicenseNumber", required = true) String driverLicenseNumber,
-			@RequestParam(name = "fullName", required = true) String fullName,
-			@RequestParam(name = "postCode", required = true) String postCode,
-			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
-			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
+			@RequestBody JobApplication application)
 			throws JobAppMalformatException, TransformerException {
+		if (application == null) {
+			throw new JobAppMalformatException(
+					"Cannot create null job application");
+		}
 
-		// set application object
-		JobApplication application = new JobApplication();
-
-		// check job application format
-		if (StringUtils.isEmpty(_jobId)) {
+		if (StringUtils.isEmpty(application.get_jobId())) {
 			throw new JobAppMalformatException(
 					"Job application malformed: _jobId required");
 		}
 
-		JobPosting jobFound = jobDao.findByUid(_jobId);
+		JobPosting jobFound = jobDao.findByUid(application.get_jobId());
 		if (jobFound == null) {
 			throw new JobAppMalformatException(
 					"Job application malformed: job with _jobId not found in database");
 		}
 
-		if (StringUtils.isEmpty(driverLicenseNumber)) {
+		if (StringUtils.isEmpty(application.getDriverLicenseNumber())) {
 			throw new JobAppMalformatException(
 					"Job application malformed: driverLicenseNumber required");
 		}
 
-		if (StringUtils.isEmpty(fullName)) {
+		if (StringUtils.isEmpty(application.getFullName())) {
 			throw new JobAppMalformatException(
 					"Job application malformed: fullName required");
 		}
 
-		if (StringUtils.isEmpty(postCode)) {
+		if (StringUtils.isEmpty(application.getPostCode())) {
 			throw new JobAppMalformatException(
 					"Job application malformed: postCode required");
 		}
 
 		application.set_appId(UUID.randomUUID().toString());
-		application.set_jobId(_jobId);
-		application.setDriverLicenseNumber(driverLicenseNumber);
-		application.setFullName(fullName);
-		application.setPostCode(postCode);
 
-		if (StringUtils.isEmpty(textCoverLetter)) {
-			textCoverLetter = "";
+		if (StringUtils.isEmpty(application.getTextCoverLetter())) {
+			application.setTextCoverLetter("");
 		}
-		application.setTextCoverLetter(textCoverLetter);
 
-		if (StringUtils.isEmpty(textBriefResume)) {
-			textBriefResume = "";
+		if (StringUtils.isEmpty(application.getTextBriefResume())) {
+			application.setTextBriefResume("");
 		}
-		application.setTextBriefResume(textBriefResume);
 
 		// after the create, status becomes submit but not processed yet
 		application.setStatus(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED.name());
@@ -204,49 +214,36 @@ public class JobAppController {
 	/**
 	 * Update an application by its candidate<br/>
 	 * 
-	 * @param _appId
-	 *            application ID
-	 * @param _jobId
-	 *            job ID this application is for
-	 * @param driverLicenseNumber
-	 *            candidate's driver license
-	 * @param fullName
-	 *            candidate's full name
-	 * @param postCode
-	 *            candidate's post code of address
-	 * @param textCoverLetter
-	 *            candidate's cover letter in text (not required)
-	 * @param textBriefResume
-	 *            candidate's brief resume in text (not required)
+	 * @param application
+	 *            an application JSON object
 	 * @return a HATEOAS application after updated
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppStatusCannotModifyException
 	 * @throws JobAppMalformatException
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
 	@RequestMapping(value = "/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> updateApplication(
 			@PathVariable(value = "_appId") String _appId,
-			@RequestParam(name = "_jobId", required = true) String _jobId,
-			@RequestParam(name = "driverLicenseNumber", required = true) String driverLicenseNumber,
-			@RequestParam(name = "fullName", required = true) String fullName,
-			@RequestParam(name = "postCode", required = true) String postCode,
-			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
-			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
+			@RequestBody JobApplication application)
 			throws JobApplicationNotFoundException,
-			JobAppStatusCannotModifyException, JobAppMalformatException, TransformerException {
+			JobAppStatusCannotModifyException, JobAppMalformatException,
+			TransformerException {
 		// check if the application exist
-		JobApplication application = jobAppDao.findById(_appId);
+		JobApplication existApp = jobAppDao.findById(_appId);
 
-		if (application == null) {
+		if (existApp == null) {
 			throw new JobApplicationNotFoundException(
 					"Job application with _appId=" + _appId
 							+ " not found in database.");
 		}
 
+		application.set_appId(_appId);
+		application.setStatus(existApp.getStatus());
+
 		// check if the application can be updated in current status
-		String status = application.getStatus();
+		String status = existApp.getStatus();
 		if (StringUtils.isEmpty(status)
 				|| !status
 						.equalsIgnoreCase(JobAppStatus.APP_SUBMITTED_NOT_PROCESSED
@@ -261,14 +258,14 @@ public class JobAppController {
 
 		// check if the application has been modified, only if so do update
 		// method, otherwise return the application directly
-		if (StringUtils.isEmpty(_jobId)
+		if (StringUtils.isEmpty(existApp.get_jobId())
 				|| StringUtils.isEmpty(application.get_jobId())
-				|| !_jobId.equals(application.get_jobId())) {
+				|| !existApp.get_jobId().equals(application.get_jobId())) {
 			// _jobId is not permitted to be updated
 			throw new JobAppMalformatException(
-					"Job application malformat on _jobId: get from database ["
-							+ application.get_jobId() + "], parameter ["
-							+ _jobId + "]");
+					"Job application malformat on _jobId: request ["
+							+ application.get_jobId() + "], database ["
+							+ existApp.get_jobId() + "]");
 		}
 
 		List<Boolean> needUpdateInfoList = new ArrayList<>();
@@ -277,39 +274,36 @@ public class JobAppController {
 
 		// check driver license
 		String appDriverLicenseNumber = application.getDriverLicenseNumber();
+		String driverLicenseNumber = existApp.getDriverLicenseNumber();
 		boolean needUpdateDriverLicense = false;
 		if (checkApplicationRequiredInfoEmpty(appDriverLicenseNumber,
 				driverLicenseNumber)) {
 			throw new JobAppMalformatException(
-					"Job application malformat on driver license number: get from database ["
-							+ appDriverLicenseNumber + "], parameter ["
+					"Job application malformat on driver license number: request ["
+							+ appDriverLicenseNumber + "], database ["
 							+ driverLicenseNumber + "]");
 		} else {
 			needUpdateDriverLicense = checkNeedUpdate(appDriverLicenseNumber,
 					driverLicenseNumber);
 			needUpdateInfoList.add(needUpdateDriverLicense);
-			if (needUpdateDriverLicense) {
-				application.setDriverLicenseNumber(driverLicenseNumber);
-			}
 		}
 
 		// check full name
 		String appFullName = application.getFullName();
+		String fullName = existApp.getFullName();
 		boolean needUpdateFullName = false;
 		if (checkApplicationRequiredInfoEmpty(appFullName, fullName)) {
 			throw new JobAppMalformatException(
-					"Job application malformat on full name: get from database ["
-							+ appFullName + "], parameter [" + fullName + "]");
+					"Job application malformat on full name: request ["
+							+ appFullName + "], database [" + fullName + "]");
 		} else {
 			needUpdateFullName = checkNeedUpdate(appFullName, fullName);
 			needUpdateInfoList.add(needUpdateFullName);
-			if (needUpdateFullName) {
-				application.setFullName(fullName);
-			}
 		}
 
 		// check post code
 		String appPostCode = application.getPostCode();
+		String postCode = existApp.getPostCode();
 		boolean needUpdatePostCode = false;
 		if (checkApplicationRequiredInfoEmpty(appPostCode, postCode)) {
 			throw new JobAppMalformatException(
@@ -318,38 +312,34 @@ public class JobAppController {
 		} else {
 			needUpdatePostCode = checkNeedUpdate(appPostCode, postCode);
 			needUpdateInfoList.add(needUpdatePostCode);
-			if (needUpdatePostCode) {
-				application.setPostCode(postCode);
-			}
 		}
 
 		// check not-required information
 
 		// check text cover letter
-		if (StringUtils.isEmpty(textCoverLetter)) {
-			textCoverLetter = "";
+		String appTextCoverLetter = application.getTextCoverLetter();
+		String textCoverLetter = existApp.getTextCoverLetter();
+		if (StringUtils.isEmpty(appTextCoverLetter)) {
+			appTextCoverLetter = "";
+			application.setTextCoverLetter("");
 		}
 
-		String appTextCoverLetter = application.getTextCoverLetter();
+		// String appTextCoverLetter = application.getTextCoverLetter();
 		boolean needUpdateTextCoverLetter = checkNeedUpdate(appTextCoverLetter,
 				textCoverLetter);
 		needUpdateInfoList.add(needUpdateTextCoverLetter);
-		if (needUpdateTextCoverLetter) {
-			application.setTextCoverLetter(textCoverLetter);
-		}
 
 		// check text brief resume
-		if (StringUtils.isEmpty(textBriefResume)) {
-			textBriefResume = "";
+		String appTextBriefResume = application.getTextBriefResume();
+		String textBriefResume = existApp.getTextBriefResume();
+		if (StringUtils.isEmpty(appTextBriefResume)) {
+			appTextBriefResume = "";
+			application.setTextBriefResume("");
 		}
 
-		String appTextBriefResume = application.getTextBriefResume();
 		boolean needUpdateTextBriefResume = checkNeedUpdate(appTextBriefResume,
 				textBriefResume);
 		needUpdateInfoList.add(needUpdateTextBriefResume);
-		if (needUpdateTextBriefResume) {
-			application.setTextBriefResume(textBriefResume);
-		}
 
 		// check need update flag to decide whether do writing update into XML
 		boolean needWriteUpdate = false;
@@ -381,14 +371,15 @@ public class JobAppController {
 	 * @return a HATEOAS application object
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppMalformatException
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
 	@RequestMapping(value = "/status/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> updateJobStatus(
 			@PathVariable(value = "_appId") String _appId,
 			@RequestParam(name = "status") String status)
-			throws JobApplicationNotFoundException, JobAppMalformatException, TransformerException {
+			throws JobApplicationNotFoundException, JobAppMalformatException,
+			TransformerException {
 		// check application existence
 		JobApplication app = jobAppDao.findById(_appId);
 		if (app == null) {
@@ -432,7 +423,7 @@ public class JobAppController {
 	 * @return a HATEOAS application object
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppStatusCannotModifyException
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 */
 	@RequestMapping(value = "/{_appId}", method = RequestMethod.DELETE)
 	@ResponseBody
@@ -450,12 +441,12 @@ public class JobAppController {
 
 		// check application status
 		String appStatus = app.getStatus();
-		if (appStatus.equals(JobAppStatus.APP_INTERVIEW_PASSED.name())
-				|| appStatus.equals(JobAppStatus.APP_INTERVIEW_FAILED.name())
-				|| appStatus.equals(JobAppStatus.APP_REJECTED_BY_CANDIDATE
+		if (!appStatus.equals(JobAppStatus.APP_INTERVIEW_PASSED.name())
+				&& !appStatus.equals(JobAppStatus.APP_INTERVIEW_FAILED.name())
+				&& !appStatus.equals(JobAppStatus.APP_REJECTED_BY_CANDIDATE
 						.name())
-				|| appStatus.equals(JobAppStatus.APP_NOT_SHORTLISTED.name())
-				|| appStatus.equals(JobAppStatus.APP_CANCELLED)) {
+				&& !appStatus.equals(JobAppStatus.APP_NOT_SHORTLISTED.name())
+				&& !appStatus.equals(JobAppStatus.APP_CANCELLED.name())) {
 			throw new JobAppStatusCannotModifyException(
 					"Job application status is " + appStatus
 							+ ", cannot be archived yet");
@@ -492,7 +483,7 @@ public class JobAppController {
 		} else if (e instanceof JobAppMalformatException
 				|| e instanceof JobAppStatusCannotModifyException) {
 			error.setErrCode(RESTErrorCode.CLIENT_BAD_REQUEST);
-			error.setErrCode(e.getMessage());
+			error.setErrMessage(e.getMessage());
 			responseEntity = new ResponseEntity(error, HttpStatus.BAD_REQUEST);
 		} else {
 			error.setErrCode(RESTErrorCode.GENERAL_SERVER_ERROR);
@@ -511,24 +502,24 @@ public class JobAppController {
 	/**
 	 * Check if info of an application is need and can be updated<br/>
 	 * 
+	 * @param fromRequest
 	 * @param fromDatabase
-	 * @param fromParam
 	 * @return
 	 */
-	private boolean checkApplicationRequiredInfoEmpty(String fromDatabase,
-			String fromParam) {
+	private boolean checkApplicationRequiredInfoEmpty(String fromRequest,
+			String fromDatabase) {
 		return StringUtils.isEmpty(fromDatabase) // from database not empty
-				|| StringUtils.isEmpty(fromParam); // from param not empty
+				|| StringUtils.isEmpty(fromRequest); // from param not empty
 	}
 
 	/**
 	 * Check if info of an application is needed to be updated<br/>
 	 * 
+	 * @param fromRequest
 	 * @param fromDatabase
-	 * @param fromParam
 	 * @return
 	 */
-	private boolean checkNeedUpdate(String fromDatabase, String fromParam) {
-		return !fromDatabase.equals(fromParam);
+	private boolean checkNeedUpdate(String fromRequest, String fromDatabase) {
+		return !fromDatabase.equals(fromRequest);
 	}
 }

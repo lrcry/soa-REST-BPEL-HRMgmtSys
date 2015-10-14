@@ -1,1 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<JobApplications>
+	<JobApplication>
+		<_appId>1111111</_appId>
+		<_jobId>1</_jobId>
+		<driverLicenseNumber>e87654321</driverLicenseNumber>
+		<fullName>Hans Mong</fullName>
+		<postCode>2018</postCode>
+		<textCoverLetter>test text cover letter if it can run.</textCoverLetter>
+		<textBriefResume>test brief resume here</textBriefResume>
+	</JobApplication>
+</JobApplications>
