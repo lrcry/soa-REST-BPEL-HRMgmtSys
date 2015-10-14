@@ -11,16 +11,27 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.com.ors.rest.bean.JobPosting;
+import au.com.ors.rest.bean.RESTError;
 import au.com.ors.rest.bean.Review;
+import au.com.ors.rest.commons.DAOErrorCode;
+import au.com.ors.rest.commons.RESTErrorCode;
 import au.com.ors.rest.dao.ReviewDAO;
+import au.com.ors.rest.exceptions.DAOException;
+import au.com.ors.rest.exceptions.JobAppMalformatException;
+import au.com.ors.rest.exceptions.JobAppStatusCannotModifyException;
+import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
 import au.com.ors.rest.exceptions.JobPostingNotFoundException;
+import au.com.ors.rest.exceptions.ReviewMalformatException;
 import au.com.ors.rest.exceptions.ReviewNotFoundException;
 import au.com.ors.rest.resource.JobPostingResource;
 import au.com.ors.rest.resource.ReviewResource;
@@ -38,13 +49,20 @@ public class ReviewController {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<ReviewResource> createReview(
-			@RequestParam(name = "_appId") String _appId,
-			@RequestParam(name = "_uId") String _uId,
-			@RequestParam(name = "comments") String comments,
-			@RequestParam(name = "decision") String decision
-			) {
+			@RequestBody Review review
+			) throws ReviewMalformatException {
+		if (review == null) {
+			throw new ReviewMalformatException("Cannot create null review");
+		}
+		if (StringUtils.isEmpty(review.get_appId())) {
+			throw new ReviewMalformatException("Review malformed: _appId required");
+		}
+		if (StringUtils.isEmpty(review.get_uId())) {
+			throw new ReviewMalformatException("Review malformed: _uId required");
+		}
+		
 		String _reviewId = UUID.randomUUID().toString();
-		Review review = new Review(_reviewId, _appId, _uId, comments, decision);
+		review.set_reviewId(_reviewId);
 		Review reviewResult = new Review(null, null, null, null, null);
 		try {
 			reviewResult = reviewDAO.create(review);
@@ -76,5 +94,34 @@ public class ReviewController {
 		}
 		ReviewResource reviewResource = reviewResourceAssembler.toResource(reviewById);
 		return new ResponseEntity<ReviewResource>(reviewResource, HttpStatus.OK);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@ExceptionHandler
+	ResponseEntity handleExceptions(Exception e) {
+		ResponseEntity responseEntity = null;
+
+		RESTError error = new RESTError();
+		if (e instanceof DAOException || e instanceof TransformerException) {
+			error.setErrCode(DAOErrorCode.DATA_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} else if (e instanceof ReviewNotFoundException) {
+			error.setErrCode(RESTErrorCode.REVIEW_NOT_FOUND);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.NOT_FOUND);
+		} else if (e instanceof ReviewMalformatException) {
+			error.setErrCode(RESTErrorCode.CLIENT_BAD_REQUEST);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+		} else {
+			error.setErrCode(RESTErrorCode.GENERAL_SERVER_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		return responseEntity;
 	}
 }

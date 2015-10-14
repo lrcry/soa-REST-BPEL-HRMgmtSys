@@ -14,14 +14,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.com.ors.rest.bean.JobPosting;
+import au.com.ors.rest.bean.RESTError;
+import au.com.ors.rest.commons.DAOErrorCode;
+import au.com.ors.rest.commons.JobStatus;
+import au.com.ors.rest.commons.RESTErrorCode;
 import au.com.ors.rest.dao.JobPostingDAO;
+import au.com.ors.rest.exceptions.DAOException;
+import au.com.ors.rest.exceptions.JobAppMalformatException;
+import au.com.ors.rest.exceptions.JobAppStatusCannotModifyException;
+import au.com.ors.rest.exceptions.JobApplicationNotFoundException;
+import au.com.ors.rest.exceptions.JobPostingMalformatException;
 import au.com.ors.rest.exceptions.JobPostingNotFoundException;
+import au.com.ors.rest.exceptions.JobPostingStatusCannotModifyException;
 import au.com.ors.rest.resource.JobPostingResource;
 import au.com.ors.rest.resource.assembler.JobPostingResourceAssembler;
 
@@ -37,15 +48,30 @@ public class JobPostingController {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> createJobPosting(
-			@RequestParam(name = "closingTime") String closingTime,
-			@RequestParam(name = "salaryRate") String salaryRate,
-			@RequestParam(name = "positionType") String positionType,
-			@RequestParam(name = "location") String location,
-			@RequestParam(name = "details") String details,
-			@RequestParam(name = "status") String status
-			) {
+			@RequestBody JobPosting jobPosting) throws JobPostingMalformatException {
+		
+		if (jobPosting == null) {
+			throw new JobPostingMalformatException("Cannot create null job posting");
+		}
+		
+		if (StringUtils.isEmpty(jobPosting.getClosingTime())) {
+			throw new JobPostingMalformatException("Job posting malformed: closingTime required");
+		}
+		if (StringUtils.isEmpty(jobPosting.getSalaryRate())) {
+			throw new JobPostingMalformatException("Job posting malformed: salaryRate required");
+		}
+		if (StringUtils.isEmpty(jobPosting.getPositionType())) {
+			throw new JobPostingMalformatException("Job posting malformed: positionType required");
+		}
+		if (StringUtils.isEmpty(jobPosting.getLocation())) {
+			throw new JobPostingMalformatException("Job posting malformed: location required");
+		}
+		if (StringUtils.isEmpty(jobPosting.getDetails())) {
+			throw new JobPostingMalformatException("Job posting malformed: details required");
+		}
+		jobPosting.setStatus(JobStatus.CREATED);
 		String _jobId = UUID.randomUUID().toString();
-		JobPosting jobPosting = new JobPosting(_jobId, closingTime, salaryRate, positionType, location, details, status);
+		jobPosting.set_jobId(_jobId);
 		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null);
 		try {
 			jobPostingResult = jobPostingDAO.create(jobPosting);
@@ -53,26 +79,53 @@ public class JobPostingController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingResult);
 		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
 	}
 	
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value = "{_jobId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> updateJobPosting(
-			@RequestParam(name = "_jobId") String _jobId,
-			@RequestParam(name = "closingTime") String closingTime,
-			@RequestParam(name = "salaryRate") String salaryRate,
-			@RequestParam(name = "positionType") String positionType,
-			@RequestParam(name = "location") String location,
-			@RequestParam(name = "details") String details,
-			@RequestParam(name = "status") String status) throws JobPostingNotFoundException, TransformerException {
-		JobPosting jobPosting = new JobPosting(_jobId, closingTime, salaryRate, positionType, location, details, status);
+			@PathVariable(value = "_jobId") String _jobId,
+			@RequestBody JobPosting jobPosting) throws JobPostingNotFoundException, TransformerException, JobPostingStatusCannotModifyException {
+		JobPosting existJP = jobPostingDAO.findByUid(_jobId);
+		if (existJP == null) {
+			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
+		}
+		jobPosting.set_jobId(_jobId);
+		String status = existJP.getStatus();
+		if (!status.equals(JobStatus.CREATED)) {
+			throw new JobPostingStatusCannotModifyException("Cannot modify the JobPosting on status = " + status + ".");
+		}
+		jobPosting.setStatus(status);
+		
 		JobPosting jobPostingResult = jobPostingDAO.update(jobPosting);
 		if (jobPostingResult == null) {
 			throw new JobPostingNotFoundException("jobPosting with _jobid=" + jobPosting.get_jobId() + " not found in database.");
 		}
 		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingResult);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/status/{_jobId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public ResponseEntity<JobPostingResource> updateJobPostingStatus(
+			@PathVariable(value = "_jobId") String _jobId,
+			@RequestParam(name= "status") String status) throws JobPostingNotFoundException, JobPostingMalformatException, TransformerException {
+		JobPosting jobPosting = jobPostingDAO.findByUid(_jobId);
+		if (jobPosting == null) {
+			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
+		}
+		if (StringUtils.isEmpty(status)) {
+			throw new JobPostingMalformatException("Job Posting update status: required input status");
+		}
+		if (!status.equals(jobPosting.getStatus())) {
+			jobPosting.setStatus(status);
+			jobPosting = jobPostingDAO.update(jobPosting);
+		}
+		
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPosting);
 		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
 	}
 	
@@ -141,21 +194,49 @@ public class JobPostingController {
 	 
 	@RequestMapping(value = "/{_jobId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public HttpEntity<JobPosting> deleteJobPosting(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException {
-		JobPosting jobPostingById = jobPostingDAO.delete(_jobId);
+	public ResponseEntity<JobPostingResource> deleteJobPosting(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException, JobAppStatusCannotModifyException, TransformerException {
+		JobPosting jobPostingById = jobPostingDAO.findByUid(_jobId);
 		if (jobPostingById == null) {
 			throw new JobPostingNotFoundException("jobPosting with _jobid=" + _jobId + " not found in database.");
 		}
-		return new ResponseEntity<JobPosting>(jobPostingById, HttpStatus.OK);
+		String status = jobPostingById.getStatus();
+		if (status.equals(JobStatus.ARCHIVED)) {
+			throw new JobAppStatusCannotModifyException(
+					"Job application status is already ARCHIVED");
+		}
+		jobPostingById.setStatus(JobStatus.ARCHIVED);
+		jobPostingById = jobPostingDAO.update(jobPostingById);
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingById);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({"rawtypes", "unchecked" })
 	@ExceptionHandler
 	ResponseEntity handleExceptions(Exception e) {
 		ResponseEntity responseEntity = null;
 		
 		// TODO handle exceptions of this controller
-		
+		RESTError error = new RESTError();
+		if (e instanceof DAOException || e instanceof TransformerException) {
+			error.setErrCode(DAOErrorCode.DATA_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		} else if (e instanceof JobPostingNotFoundException) {
+			error.setErrCode(RESTErrorCode.JOB_POSTING_NOT_FOUND);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.NOT_FOUND);
+		} else if (e instanceof JobPostingMalformatException
+				|| e instanceof JobPostingStatusCannotModifyException) {
+			error.setErrCode(RESTErrorCode.CLIENT_BAD_REQUEST);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+		} else {
+			error.setErrCode(RESTErrorCode.GENERAL_SERVER_ERROR);
+			error.setErrMessage(e.getMessage());
+			responseEntity = new ResponseEntity(error,
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		return responseEntity;
 	}
 }
