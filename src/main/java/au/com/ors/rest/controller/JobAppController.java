@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.xml.transform.TransformerException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,6 +126,7 @@ public class JobAppController {
 	 *            candidate's resume in text
 	 * @return a HATEOAS application object with HTTP status 201 created
 	 * @throws JobAppMalformatException
+	 * @throws TransformerException 
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
@@ -134,7 +137,7 @@ public class JobAppController {
 			@RequestParam(name = "postCode", required = true) String postCode,
 			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
 			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
-			throws JobAppMalformatException {
+			throws JobAppMalformatException, TransformerException {
 
 		// set application object
 		JobApplication application = new JobApplication();
@@ -219,6 +222,7 @@ public class JobAppController {
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppStatusCannotModifyException
 	 * @throws JobAppMalformatException
+	 * @throws TransformerException 
 	 */
 	@RequestMapping(value = "/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
@@ -231,7 +235,7 @@ public class JobAppController {
 			@RequestParam(name = "textCoverLetter", required = false) String textCoverLetter,
 			@RequestParam(name = "textBriefResume", required = false) String textBriefResume)
 			throws JobApplicationNotFoundException,
-			JobAppStatusCannotModifyException, JobAppMalformatException {
+			JobAppStatusCannotModifyException, JobAppMalformatException, TransformerException {
 		// check if the application exist
 		JobApplication application = jobAppDao.findById(_appId);
 
@@ -377,13 +381,14 @@ public class JobAppController {
 	 * @return a HATEOAS application object
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppMalformatException
+	 * @throws TransformerException 
 	 */
 	@RequestMapping(value = "/status/{_appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> updateJobStatus(
 			@PathVariable(value = "_appId") String _appId,
 			@RequestParam(name = "status") String status)
-			throws JobApplicationNotFoundException, JobAppMalformatException {
+			throws JobApplicationNotFoundException, JobAppMalformatException, TransformerException {
 		// check application existence
 		JobApplication app = jobAppDao.findById(_appId);
 		if (app == null) {
@@ -427,13 +432,14 @@ public class JobAppController {
 	 * @return a HATEOAS application object
 	 * @throws JobApplicationNotFoundException
 	 * @throws JobAppStatusCannotModifyException
+	 * @throws TransformerException 
 	 */
 	@RequestMapping(value = "/{_appId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<JobApplicationResource> archiveApplication(
 			@PathVariable(value = "_appId") String _appId)
 			throws JobApplicationNotFoundException,
-			JobAppStatusCannotModifyException {
+			JobAppStatusCannotModifyException, TransformerException {
 		// check application existence
 		JobApplication app = jobAppDao.findById(_appId);
 		if (app == null) {
@@ -474,7 +480,7 @@ public class JobAppController {
 		ResponseEntity responseEntity = null;
 
 		RESTError error = new RESTError();
-		if (e instanceof DAOException) {
+		if (e instanceof DAOException || e instanceof TransformerException) {
 			error.setErrCode(DAOErrorCode.DATA_ERROR);
 			error.setErrMessage(e.getMessage());
 			responseEntity = new ResponseEntity(error,

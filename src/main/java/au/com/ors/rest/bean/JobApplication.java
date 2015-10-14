@@ -2,6 +2,8 @@ package au.com.ors.rest.bean;
 
 import java.io.Serializable;
 
+import org.springframework.util.StringUtils;
+
 /**
  * Job application bean<br/>
  * 
@@ -93,5 +95,42 @@ public class JobApplication implements Serializable {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	public String toString() {
+		StringBuilder sbUser = new StringBuilder();
+		if (!StringUtils.isEmpty(_appId)) {
+			sbUser.append("_appId=").append(_appId).append(",");
+		}
+
+		if (!StringUtils.isEmpty(_jobId)) {
+			sbUser.append("_jobId=").append(_jobId).append(",");
+		}
+
+		if (!StringUtils.isEmpty(driverLicenseNumber)) {
+			sbUser.append("driverLicenseNumber=").append(driverLicenseNumber).append(",");
+		}
+
+		if (!StringUtils.isEmpty(fullName)) {
+			sbUser.append("fullName=").append(fullName).append(",");
+		}
+
+		if (!StringUtils.isEmpty(postCode)) {
+			sbUser.append("postCode=").append(postCode).append(",");
+		}
+
+		if (!StringUtils.isEmpty(textCoverLetter)) {
+			sbUser.append("textCoverLetter=true").append(",");
+		} else {
+			sbUser.append("textCoverLetter=false").append(",");
+		}
+
+		if (!StringUtils.isEmpty(textBriefResume)) {
+			sbUser.append("textBriefResume=true");
+		} else {
+			sbUser.append("textBriefResume=false");
+		}
+
+		return sbUser.toString();
 	}
 }

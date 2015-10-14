@@ -25,4 +25,10 @@ http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 		annotation-config="true"></context:component-scan>
 	<mvc:default-servlet-handler />
 	<mvc:annotation-driven />
+	
+	<!-- <beans:bean id="ObjectXMLConverter" class="au.com.ors.rest.dao.xmlhandler.ObjectXmlConverter">
+		<beans:property name="marshaller" ref="castorMarshaller" />
+		<beans:property name="unmarshaller" ref="castorMarshaller" />
+	</beans:bean>
+	<beans:bean id="castorMarshaller" class="org.springframework.oxm.castor.CastorMarshaller" /> -->
 </beans:beans>

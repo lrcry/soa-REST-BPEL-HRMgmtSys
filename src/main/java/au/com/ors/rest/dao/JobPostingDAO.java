@@ -252,7 +252,7 @@ public class JobPostingDAO {
 			}
 			idCheck = false;
 		}
-		if (jobPosting.get_jobId() != null) {
+		if (!StringUtils.isEmpty(jobPosting.get_jobId())) {
 			DOMSource source = new DOMSource(dom);
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
