@@ -53,7 +53,9 @@ public class JobPostingController {
 		if (jobPosting == null) {
 			throw new JobPostingMalformatException("Cannot create null job posting");
 		}
-		
+		if (StringUtils.isEmpty(jobPosting.getTitle())) {
+			throw new JobPostingMalformatException("Job posting malformed: title required");
+		}
 		if (StringUtils.isEmpty(jobPosting.getClosingTime())) {
 			throw new JobPostingMalformatException("Job posting malformed: closingTime required");
 		}
@@ -72,7 +74,7 @@ public class JobPostingController {
 		jobPosting.setStatus(JobStatus.CREATED);
 		String _jobId = UUID.randomUUID().toString();
 		jobPosting.set_jobId(_jobId);
-		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null);
+		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null, null);
 		try {
 			jobPostingResult = jobPostingDAO.create(jobPosting);
 		} catch (TransformerException e) {
@@ -133,6 +135,7 @@ public class JobPostingController {
 	@ResponseBody
 	public ResponseEntity<List<JobPostingResource>>  getJobPostings(
 			@RequestParam(name = "_jobId" , required = false) String _jobId,
+			@RequestParam(name = "title" , required = false) String title,
 			@RequestParam(name = "closingTime" , required = false) String closingTime,
 			@RequestParam(name = "salaryRate" , required = false) String salaryRate,
 			@RequestParam(name = "positionType" , required = false) String positionType,
@@ -148,6 +151,8 @@ public class JobPostingController {
 		for (JobPosting jobPosting : jobPostingList) {
 			if (!StringUtils.isEmpty(_jobId) && StringUtils.isEmpty(jobPosting.get_jobId())) {
 				continue;
+			} else if (!StringUtils.isEmpty(title) && StringUtils.isEmpty(jobPosting.getTitle())) {
+				continue;
 			} else if (!StringUtils.isEmpty(closingTime) && StringUtils.isEmpty(jobPosting.getClosingTime())) {
 				continue;
 			} else if (!StringUtils.isEmpty(salaryRate) && StringUtils.isEmpty(jobPosting.getSalaryRate())) {
@@ -161,6 +166,8 @@ public class JobPostingController {
 			} else if (!StringUtils.isEmpty(status) && StringUtils.isEmpty(jobPosting.getStatus())) {
 				continue;
 			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+				continue;
+			} else if (!StringUtils.isEmpty(title) && !StringUtils.isEmpty(jobPosting.getTitle()) && !jobPosting.getTitle().equalsIgnoreCase(title)) {
 				continue;
 			} else if (!StringUtils.isEmpty(closingTime) && !StringUtils.isEmpty(jobPosting.getClosingTime()) && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
 				continue;
