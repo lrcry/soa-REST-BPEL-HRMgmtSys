@@ -15,6 +15,8 @@ public class JobPosting implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	String _jobId;
+	
+	String title;
 
 	String closingTime;
 
@@ -31,6 +33,7 @@ public class JobPosting implements Serializable {
 	@JsonCreator
 	public JobPosting(
 			@JsonProperty("_jobId") String _jobId,
+			@JsonProperty("title") String title,
 			@JsonProperty("closingTime") String closingTime,
 			@JsonProperty("salaryRate") String salaryRate,
 			@JsonProperty("positionType") String positionType,
@@ -40,6 +43,7 @@ public class JobPosting implements Serializable {
 			) {
 		super();
 		this._jobId = _jobId;
+		this.title = title;
 		this.closingTime = closingTime;
 		this.salaryRate = salaryRate;
 		this.positionType = positionType;
@@ -54,6 +58,14 @@ public class JobPosting implements Serializable {
 
 	public void set_jobId(String _jobId) {
 		this._jobId = _jobId;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getClosingTime() {
@@ -109,6 +121,10 @@ public class JobPosting implements Serializable {
 		
 		if (!StringUtils.isEmpty(_jobId)) {
 			sb.append("_jobId=").append(_jobId).append(",");
+		}
+		
+		if (!StringUtils.isEmpty(title)) {
+			sb.append("title=").append(title).append(",");
 		}
 		
 		if (!StringUtils.isEmpty(closingTime)) {
