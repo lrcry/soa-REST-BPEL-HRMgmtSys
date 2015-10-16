@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <JobApplications>
 	<JobApplication>
 		<_appId>1111111</_appId>
@@ -6,8 +6,39 @@
 		<driverLicenseNumber>e87654321</driverLicenseNumber>
 		<fullName>Hans Mong</fullName>
 		<postCode>2018</postCode>
-		<textCoverLetter>test text cover letter if it can run.</textCoverLetter>
+		<textCoverLetter>test text cover letter if it can run.
+		</textCoverLetter>
 		<textBriefResume>test brief resume here</textBriefResume>
 		<status>APP_ARCHIVED</status>
+	</JobApplication>
+	<JobApplication>
+		<_appId>1234567899123</_appId>
+		<_jobId>2</_jobId>
+		<driverLicenseNumber>e82828282</driverLicenseNumber>
+		<fullName>Crack Web</fullName>
+		<postCode>2000</postCode>
+		<textCoverLetter>This is an application for job one.</textCoverLetter>
+		<textBriefResume>I dont have any resume.</textBriefResume>
+		<status>APP_SUBMITTED_NOT_PROCESSED</status>
+	</JobApplication>
+	<JobApplication>
+		<_appId>db370de5-373f-4db7-8ece-4a577d09afc7</_appId>
+		<_jobId>2</_jobId>
+		<driverLicenseNumber>g12345678</driverLicenseNumber>
+		<fullName>Some Name</fullName>
+		<postCode>2222</postCode>
+		<textCoverLetter />
+		<textBriefResume />
+		<status>APP_SUBMITTED_NOT_PROCESSED</status>
+	</JobApplication>
+	<JobApplication>
+		<_appId>b9f17c91-ab22-46c8-9296-f07a8c1633da</_appId>
+		<_jobId>1</_jobId>
+		<driverLicenseNumber>g87654321</driverLicenseNumber>
+		<fullName>Others Name</fullName>
+		<postCode>2018</postCode>
+		<textCoverLetter>Hello world.</textCoverLetter>
+		<textBriefResume />
+		<status>APP_SUBMITTED_NOT_PROCESSED</status>
 	</JobApplication>
 </JobApplications>
