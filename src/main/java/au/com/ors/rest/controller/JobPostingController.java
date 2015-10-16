@@ -53,6 +53,9 @@ public class JobPostingController {
 		if (jobPosting == null) {
 			throw new JobPostingMalformatException("Cannot create null job posting");
 		}
+		if (StringUtils.isEmpty(jobPosting.get_uId())) {
+			throw new JobPostingMalformatException("Job posting malformed: uid required");
+		}
 		if (StringUtils.isEmpty(jobPosting.getTitle())) {
 			throw new JobPostingMalformatException("Job posting malformed: title required");
 		}
@@ -74,7 +77,7 @@ public class JobPostingController {
 		jobPosting.setStatus(JobStatus.CREATED);
 		String _jobId = UUID.randomUUID().toString();
 		jobPosting.set_jobId(_jobId);
-		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null, null);
+		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null, null, null);
 		try {
 			jobPostingResult = jobPostingDAO.create(jobPosting);
 		} catch (TransformerException e) {
@@ -91,7 +94,7 @@ public class JobPostingController {
 	public ResponseEntity<JobPostingResource> updateJobPosting(
 			@PathVariable(value = "_jobId") String _jobId,
 			@RequestBody JobPosting jobPosting) throws JobPostingNotFoundException, TransformerException, JobPostingStatusCannotModifyException {
-		JobPosting existJP = jobPostingDAO.findByUid(_jobId);
+		JobPosting existJP = jobPostingDAO.findByJid(_jobId);
 		if (existJP == null) {
 			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
 		}
@@ -115,7 +118,7 @@ public class JobPostingController {
 	public ResponseEntity<JobPostingResource> updateJobPostingStatus(
 			@PathVariable(value = "_jobId") String _jobId,
 			@RequestParam(name= "status") String status) throws JobPostingNotFoundException, JobPostingMalformatException, TransformerException {
-		JobPosting jobPosting = jobPostingDAO.findByUid(_jobId);
+		JobPosting jobPosting = jobPostingDAO.findByJid(_jobId);
 		if (jobPosting == null) {
 			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
 		}
@@ -135,6 +138,7 @@ public class JobPostingController {
 	@ResponseBody
 	public ResponseEntity<List<JobPostingResource>>  getJobPostings(
 			@RequestParam(name = "_jobId" , required = false) String _jobId,
+			@RequestParam(name = "_uId" , required = false) String _uId,
 			@RequestParam(name = "title" , required = false) String title,
 			@RequestParam(name = "closingTime" , required = false) String closingTime,
 			@RequestParam(name = "salaryRate" , required = false) String salaryRate,
@@ -151,6 +155,8 @@ public class JobPostingController {
 		for (JobPosting jobPosting : jobPostingList) {
 			if (!StringUtils.isEmpty(_jobId) && StringUtils.isEmpty(jobPosting.get_jobId())) {
 				continue;
+			} else if (!StringUtils.isEmpty(_uId) && StringUtils.isEmpty(jobPosting.get_uId())) {
+				continue;
 			} else if (!StringUtils.isEmpty(title) && StringUtils.isEmpty(jobPosting.getTitle())) {
 				continue;
 			} else if (!StringUtils.isEmpty(closingTime) && StringUtils.isEmpty(jobPosting.getClosingTime())) {
@@ -166,6 +172,8 @@ public class JobPostingController {
 			} else if (!StringUtils.isEmpty(status) && StringUtils.isEmpty(jobPosting.getStatus())) {
 				continue;
 			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+				continue;
+			} else if (!StringUtils.isEmpty(_uId) && !StringUtils.isEmpty(jobPosting.get_uId()) && !jobPosting.get_uId().equalsIgnoreCase(_uId)) {
 				continue;
 			} else if (!StringUtils.isEmpty(title) && !StringUtils.isEmpty(jobPosting.getTitle()) && !jobPosting.getTitle().equalsIgnoreCase(title)) {
 				continue;
@@ -191,7 +199,7 @@ public class JobPostingController {
 	@RequestMapping(value = "/{_jobId}", method = RequestMethod.GET)
 	@ResponseBody
 	public HttpEntity<JobPostingResource> getJobPostingById(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException {
-		JobPosting jobPostingById = jobPostingDAO.findByUid(_jobId);
+		JobPosting jobPostingById = jobPostingDAO.findByJid(_jobId);
 		if (jobPostingById == null) {
 			throw new JobPostingNotFoundException("jobPosting with _jobid=" + _jobId + " not found in database.");
 		}
@@ -202,7 +210,7 @@ public class JobPostingController {
 	@RequestMapping(value = "/{_jobId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> deleteJobPosting(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException, JobAppStatusCannotModifyException, TransformerException {
-		JobPosting jobPostingById = jobPostingDAO.findByUid(_jobId);
+		JobPosting jobPostingById = jobPostingDAO.findByJid(_jobId);
 		if (jobPostingById == null) {
 			throw new JobPostingNotFoundException("jobPosting with _jobid=" + _jobId + " not found in database.");
 		}
@@ -216,6 +224,19 @@ public class JobPostingController {
 		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingById);
 		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/_uId/{_uId}", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<List<JobPostingResource>> getJobPostingsByUid(
+			@PathVariable(value = "_uId") String _uId) {
+		List<JobPosting> jobPostingList = jobPostingDAO.findByUid(_uId);
+		if (jobPostingList == null) {
+			jobPostingList = new ArrayList<JobPosting>();
+		}
+		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingList);
+		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
+	}
+	
 	
 	@SuppressWarnings({"rawtypes", "unchecked" })
 	@ExceptionHandler

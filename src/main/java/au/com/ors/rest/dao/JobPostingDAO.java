@@ -90,7 +90,7 @@ public class JobPostingDAO {
 		}
 	}
 
-	public JobPosting findByUid(String uid) {
+	public JobPosting findByJid(String _jobId) {
 		// TODO
 		Element rootElement = dom.getDocumentElement();
 		NodeList nodeList = rootElement.getChildNodes();
@@ -99,7 +99,7 @@ public class JobPostingDAO {
 			if (!node.getNodeName().equalsIgnoreCase("JobPosting")) {
 				continue;
 			}
-			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null, null);
+			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null, null, null);
 			NodeList attributeList = node.getChildNodes();
 			boolean idCheck = false;
 			for (int j = 0; j < attributeList.getLength(); ++j) {
@@ -107,10 +107,12 @@ public class JobPostingDAO {
 				
 				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
 					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
-						if (currentNode.getTextContent().equalsIgnoreCase(uid)) {
+						if (currentNode.getTextContent().equalsIgnoreCase(_jobId)) {
 							jobPosting.set_jobId(currentNode.getTextContent());
 							idCheck = true;
 						} 
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("_uId")) {
+						jobPosting.set_uId(currentNode.getTextContent());
 					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("title")) {
 						jobPosting.setTitle(currentNode.getTextContent());
 					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
@@ -149,13 +151,15 @@ public class JobPostingDAO {
 				continue;
 			}
 			NodeList attributeList = node.getChildNodes();
-			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null, null);
+			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null, null, null);
 			for (int j = 0; j < attributeList.getLength(); ++j) {
 				Node currentNode = attributeList.item(j);
 				
 				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
 					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
 						jobPosting.set_jobId(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("_uId")) {
+						jobPosting.set_uId(currentNode.getTextContent());
 					} else if (currentNode.getNodeName().equalsIgnoreCase("title")) {
 						jobPosting.setTitle(currentNode.getTextContent());
 					} else if (currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
@@ -180,12 +184,58 @@ public class JobPostingDAO {
 		}
 		return jobPostingList;
 	}
+	
+	public List<JobPosting> findByUid(String _uId) {
+		// TODO
+		List<JobPosting> jobPostingList = new ArrayList<JobPosting>();
+		Element rootElement = dom.getDocumentElement();
+		NodeList nodeList = rootElement.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); ++i) {
+			Node node = nodeList.item(i);
+			if (!node.getNodeName().equalsIgnoreCase("JobPosting")) {
+				continue;
+			}
+			NodeList attributeList = node.getChildNodes();
+			JobPosting jobPosting = new JobPosting(null, null, null, null, null, null, null, null, null);
+			for (int j = 0; j < attributeList.getLength(); ++j) {
+				Node currentNode = attributeList.item(j);
+				
+				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+					if (currentNode.getNodeName().equalsIgnoreCase("_jobId")) {
+						jobPosting.set_jobId(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("_uId")) {
+						jobPosting.set_uId(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("title")) {
+						jobPosting.setTitle(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("closingTime")) {
+						jobPosting.setClosingTime(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("salaryRate")) {
+						jobPosting.setSalaryRate(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("positionType")) {
+						jobPosting.setPositionType(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("location")) {
+						jobPosting.setLocation(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("details")) {
+						jobPosting.setDetails(currentNode.getTextContent());
+					} else if (currentNode.getNodeName().equalsIgnoreCase("status")) {
+						jobPosting.setStatus(currentNode.getTextContent());
+					}
+					
+				}
+			}
+			if (!StringUtils.isEmpty(jobPosting.get_jobId()) && jobPosting.get_uId().equals(_uId)) {
+				jobPostingList.add(jobPosting);
+			}
+		}
+		return jobPostingList;
+	}
 
 	public JobPosting create(JobPosting jobPosting) throws TransformerException {
 		// TODO Auto-generated method stub
 		Element rootElement = dom.getDocumentElement();
 		Element jobPostingEle = dom.createElement("jobPosting");
 		Element _jobIdEle = dom.createElement("_jobId");
+		Element _uIdEle = dom.createElement("_uId");
 		Element titleEle = dom.createElement("title");
 		Element closingTimeEle = dom.createElement("closingTime");
 		Element salaryRateEle = dom.createElement("salaryRate");
@@ -195,6 +245,7 @@ public class JobPostingDAO {
 		Element statusEle = dom.createElement("status");
 		
 		_jobIdEle.appendChild(dom.createTextNode(jobPosting.get_jobId()));
+		_uIdEle.appendChild(dom.createTextNode(jobPosting.get_uId()));
 		titleEle.appendChild(dom.createTextNode(jobPosting.getTitle()));
 		closingTimeEle.appendChild(dom.createTextNode(jobPosting.getClosingTime()));
 		salaryRateEle.appendChild(dom.createTextNode(jobPosting.getSalaryRate()));
@@ -204,6 +255,7 @@ public class JobPostingDAO {
 		statusEle.appendChild(dom.createTextNode(jobPosting.getStatus()));
 		
 		jobPostingEle.appendChild(_jobIdEle);
+		jobPostingEle.appendChild(_uIdEle);
 		jobPostingEle.appendChild(titleEle);
 		jobPostingEle.appendChild(closingTimeEle);
 		jobPostingEle.appendChild(salaryRateEle);
@@ -242,6 +294,8 @@ public class JobPostingDAO {
 						if (currentNode.getTextContent().equalsIgnoreCase(jobPosting.get_jobId())) {
 							idCheck = true;
 						}
+					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("_uId")) {
+						currentNode.setTextContent(jobPosting.get_uId());
 					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("title")) {
 						currentNode.setTextContent(jobPosting.getTitle());
 					} else if (idCheck && currentNode.getNodeName().equalsIgnoreCase("closingTime")) {

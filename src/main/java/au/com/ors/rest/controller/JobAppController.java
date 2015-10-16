@@ -164,7 +164,7 @@ public class JobAppController {
 					"Job application malformed: _jobId required");
 		}
 
-		JobPosting jobFound = jobDao.findByUid(application.get_jobId());
+		JobPosting jobFound = jobDao.findByJid(application.get_jobId());
 		if (jobFound == null) {
 			throw new JobAppMalformatException(
 					"Job application malformed: job with _jobId not found in database");
