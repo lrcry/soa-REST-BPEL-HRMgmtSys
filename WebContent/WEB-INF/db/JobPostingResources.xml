@@ -2,6 +2,7 @@
 <JobPostings>
 	<JobPosting>
 		<_jobId>1</_jobId>
+		<_uId>001</_uId>
 		<closingTime>2015-12-03 19:00:00</closingTime>
 		<title>Web Developer</title>
 		<salaryRate>Flexible</salaryRate>
@@ -14,6 +15,7 @@
 	</JobPosting>
 	<JobPosting>
 		<_jobId>2</_jobId>
+		<_uId>001</_uId>
 		<closingTime>2015-12-31 00:00:00</closingTime>
 		<title>Android Developer</title>
 		<salaryRate>25/h, negotiable</salaryRate>
@@ -27,6 +29,7 @@
 	</JobPosting>
 	<jobPosting>
 		<_jobId>52e59433-3cbd-4c54-ada7-269e759ebe84</_jobId>
+		<_uId>001</_uId>
 		<title>Full Stack Web Developer</title>
 		<closingTime>2016-01-01 00:00:00</closingTime>
 		<salaryRate>negotiable</salaryRate>
