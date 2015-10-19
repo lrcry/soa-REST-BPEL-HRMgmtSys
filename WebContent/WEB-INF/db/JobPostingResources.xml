@@ -1,10 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <JobPostings>
 	<JobPosting>
 		<_jobId>1</_jobId>
-		<closingTime>2</closingTime>
+		<_uId>001</_uId>
+		<closingTime>2015-12-03 19:00:00</closingTime>
+		<title>Web Developer</title>
+		<salaryRate>Flexible</salaryRate>
+		<positionType>Part-time</positionType>
+		<location>Suite 21, 327-329 Pitt St, Sydney NSW 2000</location>
+		<details>AusTop needs a web developer who is capable of HTML5, CSS3,
+			JavaScript, PHP, MySQL and WordPress to develop several new projects
+			for official websites.</details>
+		<status>CREATED</status>
 	</JobPosting>
 	<JobPosting>
 		<_jobId>2</_jobId>
+		<_uId>001</_uId>
+		<closingTime>2015-12-31 00:00:00</closingTime>
+		<title>Android Developer</title>
+		<salaryRate>25/h, negotiable</salaryRate>
+		<positionType>Casual</positionType>
+		<location>Suite 298, 102-103 Some St, Somestate NSW 2999</location>
+		<details>Some company is seeking for an Android developer who knows
+			not only Android development in Java, C++ but also has the commercial
+			experience in Apache Cordova, Phonegap and HTML, CSS, JavaScript.
+		</details>
+		<status>CREATED</status>
 	</JobPosting>
+	<jobPosting>
+		<_jobId>52e59433-3cbd-4c54-ada7-269e759ebe84</_jobId>
+		<_uId>001</_uId>
+		<title>Full Stack Web Developer</title>
+		<closingTime>2016-01-01 00:00:00</closingTime>
+		<salaryRate>negotiable</salaryRate>
+		<positionType>Full-time</positionType>
+		<location>Suite 22, 365 Sun St, HelloWorld NSW 2333</location>
+		<details>We need a full stack web developer who can handle with
+			node.js/grunt.js/react.js, also with a strong ability of front end
+			techniques such as HTML5, CSS, jQuery, AngularJS, Backbone.js, etc.
+		</details>
+		<status>CREATED</status>
+	</jobPosting>
 </JobPostings>
