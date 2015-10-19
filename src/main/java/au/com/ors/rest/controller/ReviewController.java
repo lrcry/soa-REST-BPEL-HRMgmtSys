@@ -76,12 +76,33 @@ public class ReviewController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<List<ReviewResource>>  getReviews() {
+	public ResponseEntity<List<ReviewResource>>  getReviews(
+			@RequestParam(name = "_appId", required = false) String _appId,
+			@RequestParam(name = "_uId", required = false) String _uId) {
 		List<Review> reviewList = reviewDAO.findAll();
 		if (reviewList == null) {
 			reviewList = new ArrayList<Review>();
 		}
-		List<ReviewResource> reviewResourceList = reviewResourceAssembler.toResources(reviewList);
+		List<Review> reviewListResult = new ArrayList<Review>();
+		for (Review review : reviewList) {
+			if (!StringUtils.isEmpty(_appId)
+					&& StringUtils.isEmpty(review.get_appId())) {
+				continue;
+			} else if (!StringUtils.isEmpty(_uId)
+					&& StringUtils.isEmpty(review.get_uId())){
+				continue;
+			} else if (!StringUtils.isEmpty(_appId) 
+					&& !StringUtils.isEmpty(review.get_appId())
+					&& !review.get_appId().equals(_appId)) {
+				continue;
+			}  else if (!StringUtils.isEmpty(_uId) 
+					&& !StringUtils.isEmpty(review.get_uId())
+					&& !review.get_uId().equals(_uId)) {
+				continue;
+			}
+			reviewListResult.add(review);
+		}
+		List<ReviewResource> reviewResourceList = reviewResourceAssembler.toResources(reviewListResult);
 		return new ResponseEntity<List<ReviewResource>>(reviewResourceList, HttpStatus.OK);
 	}
 	
