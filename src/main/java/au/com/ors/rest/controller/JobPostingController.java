@@ -171,9 +171,9 @@ public class JobPostingController {
 				continue;
 			} else if (!StringUtils.isEmpty(status) && StringUtils.isEmpty(jobPosting.getStatus())) {
 				continue;
-			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equalsIgnoreCase(_jobId)) {
+			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equals(_jobId)) {
 				continue;
-			} else if (!StringUtils.isEmpty(_uId) && !StringUtils.isEmpty(jobPosting.get_uId()) && !jobPosting.get_uId().equalsIgnoreCase(_uId)) {
+			} else if (!StringUtils.isEmpty(_uId) && !StringUtils.isEmpty(jobPosting.get_uId()) && !jobPosting.get_uId().equals(_uId)) {
 				continue;
 			} else if (!StringUtils.isEmpty(title) && !StringUtils.isEmpty(jobPosting.getTitle()) && !jobPosting.getTitle().equalsIgnoreCase(title)) {
 				continue;
