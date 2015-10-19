@@ -8,11 +8,11 @@ Group Member: z5003823, Ran Meng
 Details of Collaboration:
 
 Qian: 
-    Mainly deals with the rest, soap, bpel part of the assignment.
+Mainly deals with the rest, soap, bpel part of the assignment.
     
-    In the rest service part, Qian completes the job posting, review model. And in soap part, Qian completes all the pdv and crv soap service. In bpel part, he deploy the environment for ode server, and complete the whole bpel process for the assignment. 
+In the rest service part, Qian completes the job posting, review model. And in soap part, Qian completes all the pdv and crv soap service. In bpel part, he deploy the environment for ode server, and complete the whole bpel process for the assignment. 
     
-    For all the parts above, he does the tests for them.
+For all the parts above, he does the tests for them.
 
 Ran:
   
