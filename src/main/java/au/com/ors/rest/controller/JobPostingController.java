@@ -95,6 +95,7 @@ public class JobPostingController {
 			@PathVariable(value = "_jobId") String _jobId,
 			@RequestBody JobPosting jobPosting) throws JobPostingNotFoundException, TransformerException, JobPostingStatusCannotModifyException {
 		JobPosting existJP = jobPostingDAO.findByJid(_jobId);
+		System.out.println("11111");
 		if (existJP == null) {
 			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
 		}
