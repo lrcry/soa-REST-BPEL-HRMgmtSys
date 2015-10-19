@@ -15,7 +15,10 @@ In the rest service part, Qian completes the job posting, review model. And in s
 For all the parts above, he does the tests for them.
 
 Ran:
-  
+- Design, implemented the architecture of REST service based on spring mvc/hateoas framework
+- REST service URI design
+- Implemented JobApplication and User part of REST service
+- Implemented ORS web application
 
 This project is a set of RESTful service of a Human Resources Management System which constructed based on REST &amp; BPEL.  
 It is constructed with Spring MVC, Spring HATEOAS project.  
