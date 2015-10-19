@@ -41,179 +41,255 @@ import au.com.ors.rest.resource.assembler.JobPostingResourceAssembler;
 public class JobPostingController {
 	@Autowired
 	JobPostingDAO jobPostingDAO;
-	
+
 	@Autowired
 	JobPostingResourceAssembler jobPostingResourceAssembler;
-	
+
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> createJobPosting(
-			@RequestBody JobPosting jobPosting) throws JobPostingMalformatException {
-		
+			@RequestBody JobPosting jobPosting)
+			throws JobPostingMalformatException, TransformerException {
+
 		if (jobPosting == null) {
-			throw new JobPostingMalformatException("Cannot create null job posting");
+			throw new JobPostingMalformatException(
+					"Cannot create null job posting");
 		}
 		if (StringUtils.isEmpty(jobPosting.get_uId())) {
-			throw new JobPostingMalformatException("Job posting malformed: uid required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: uid required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getTitle())) {
-			throw new JobPostingMalformatException("Job posting malformed: title required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: title required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getClosingTime())) {
-			throw new JobPostingMalformatException("Job posting malformed: closingTime required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: closingTime required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getSalaryRate())) {
-			throw new JobPostingMalformatException("Job posting malformed: salaryRate required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: salaryRate required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getPositionType())) {
-			throw new JobPostingMalformatException("Job posting malformed: positionType required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: positionType required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getLocation())) {
-			throw new JobPostingMalformatException("Job posting malformed: location required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: location required");
 		}
 		if (StringUtils.isEmpty(jobPosting.getDetails())) {
-			throw new JobPostingMalformatException("Job posting malformed: details required");
+			throw new JobPostingMalformatException(
+					"Job posting malformed: details required");
 		}
 		jobPosting.setStatus(JobStatus.CREATED);
 		String _jobId = UUID.randomUUID().toString();
 		jobPosting.set_jobId(_jobId);
-		JobPosting jobPostingResult = new JobPosting(null, null, null, null, null, null, null, null, null);
-		try {
-			jobPostingResult = jobPostingDAO.create(jobPosting);
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingResult);
-		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+		JobPosting jobPostingResult = new JobPosting(null, null, null, null,
+				null, null, null, null, null);
+
+		jobPostingResult = jobPostingDAO.create(jobPosting);
+
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler
+				.toResource(jobPostingResult);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource,
+				HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "{_jobId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> updateJobPosting(
 			@PathVariable(value = "_jobId") String _jobId,
-			@RequestBody JobPosting jobPosting) throws JobPostingNotFoundException, TransformerException, JobPostingStatusCannotModifyException {
+			@RequestBody JobPosting jobPosting)
+			throws JobPostingNotFoundException, TransformerException,
+			JobPostingStatusCannotModifyException {
 		JobPosting existJP = jobPostingDAO.findByJid(_jobId);
-		System.out.println("11111");
 		if (existJP == null) {
-			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
+			throw new JobPostingNotFoundException("Job Posting with _jobId = "
+					+ _jobId + " not found in database.");
 		}
 		jobPosting.set_jobId(_jobId);
 		String status = existJP.getStatus();
 		if (!status.equals(JobStatus.CREATED)) {
-			throw new JobPostingStatusCannotModifyException("Cannot modify the JobPosting on status = " + status + ".");
+			throw new JobPostingStatusCannotModifyException(
+					"Cannot modify the JobPosting on status = " + status + ".");
 		}
 		jobPosting.setStatus(status);
-		
+
 		JobPosting jobPostingResult = jobPostingDAO.update(jobPosting);
 		if (jobPostingResult == null) {
-			throw new JobPostingNotFoundException("jobPosting with _jobid=" + jobPosting.get_jobId() + " not found in database.");
+			throw new JobPostingNotFoundException("jobPosting with _jobid="
+					+ jobPosting.get_jobId() + " not found in database.");
 		}
-		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingResult);
-		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler
+				.toResource(jobPostingResult);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource,
+				HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/status/{_jobId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public ResponseEntity<JobPostingResource> updateJobPostingStatus(
 			@PathVariable(value = "_jobId") String _jobId,
-			@RequestParam(name= "status") String status) throws JobPostingNotFoundException, JobPostingMalformatException, TransformerException {
+			@RequestParam(name = "status") String status)
+			throws JobPostingNotFoundException, JobPostingMalformatException,
+			TransformerException {
 		JobPosting jobPosting = jobPostingDAO.findByJid(_jobId);
 		if (jobPosting == null) {
-			throw new JobPostingNotFoundException("Job Posting with _jobId = " + _jobId + " not found in database.");
+			throw new JobPostingNotFoundException("Job Posting with _jobId = "
+					+ _jobId + " not found in database.");
 		}
 		if (StringUtils.isEmpty(status)) {
-			throw new JobPostingMalformatException("Job Posting update status: required input status");
+			throw new JobPostingMalformatException(
+					"Job Posting update status: required input status");
 		}
 		if (!status.equals(jobPosting.getStatus())) {
 			jobPosting.setStatus(status);
 			jobPosting = jobPostingDAO.update(jobPosting);
 		}
-		
-		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPosting);
-		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler
+				.toResource(jobPosting);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource,
+				HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<List<JobPostingResource>>  getJobPostings(
-			@RequestParam(name = "_jobId" , required = false) String _jobId,
-			@RequestParam(name = "_uId" , required = false) String _uId,
-			@RequestParam(name = "title" , required = false) String title,
-			@RequestParam(name = "closingTime" , required = false) String closingTime,
-			@RequestParam(name = "salaryRate" , required = false) String salaryRate,
-			@RequestParam(name = "positionType" , required = false) String positionType,
-			@RequestParam(name = "location" , required = false) String location,
-			@RequestParam(name = "details" , required = false) String details,
-			@RequestParam(name = "status" , required = false) String status) {
+	public ResponseEntity<List<JobPostingResource>> getJobPostings(
+			@RequestParam(name = "_jobId", required = false) String _jobId,
+			@RequestParam(name = "_uId", required = false) String _uId,
+			@RequestParam(name = "title", required = false) String title,
+			@RequestParam(name = "closingTime", required = false) String closingTime,
+			@RequestParam(name = "salaryRate", required = false) String salaryRate,
+			@RequestParam(name = "positionType", required = false) String positionType,
+			@RequestParam(name = "location", required = false) String location,
+			@RequestParam(name = "details", required = false) String details,
+			@RequestParam(name = "status", required = false) String status) {
 		List<JobPosting> jobPostingList = jobPostingDAO.findAll();
 		List<JobPosting> jobPostingListResult = new ArrayList<JobPosting>();
 		if (jobPostingList == null) {
 			jobPostingList = new ArrayList<JobPosting>();
 		}
-		
+
 		for (JobPosting jobPosting : jobPostingList) {
-			if (!StringUtils.isEmpty(_jobId) && StringUtils.isEmpty(jobPosting.get_jobId())) {
+			if (!StringUtils.isEmpty(_jobId)
+					&& StringUtils.isEmpty(jobPosting.get_jobId())) {
 				continue;
-			} else if (!StringUtils.isEmpty(_uId) && StringUtils.isEmpty(jobPosting.get_uId())) {
+			} else if (!StringUtils.isEmpty(_uId)
+					&& StringUtils.isEmpty(jobPosting.get_uId())) {
 				continue;
-			} else if (!StringUtils.isEmpty(title) && StringUtils.isEmpty(jobPosting.getTitle())) {
+			} else if (!StringUtils.isEmpty(title)
+					&& StringUtils.isEmpty(jobPosting.getTitle())) {
 				continue;
-			} else if (!StringUtils.isEmpty(closingTime) && StringUtils.isEmpty(jobPosting.getClosingTime())) {
+			} else if (!StringUtils.isEmpty(closingTime)
+					&& StringUtils.isEmpty(jobPosting.getClosingTime())) {
 				continue;
-			} else if (!StringUtils.isEmpty(salaryRate) && StringUtils.isEmpty(jobPosting.getSalaryRate())) {
+			} else if (!StringUtils.isEmpty(salaryRate)
+					&& StringUtils.isEmpty(jobPosting.getSalaryRate())) {
 				continue;
-			} else if (!StringUtils.isEmpty(positionType) && StringUtils.isEmpty(jobPosting.getPositionType())) {
+			} else if (!StringUtils.isEmpty(positionType)
+					&& StringUtils.isEmpty(jobPosting.getPositionType())) {
 				continue;
-			} else if (!StringUtils.isEmpty(location) && StringUtils.isEmpty(jobPosting.getLocation())) {
+			} else if (!StringUtils.isEmpty(location)
+					&& StringUtils.isEmpty(jobPosting.getLocation())) {
 				continue;
-			} else if (!StringUtils.isEmpty(details) && StringUtils.isEmpty(jobPosting.getDetails())) {
+			} else if (!StringUtils.isEmpty(details)
+					&& StringUtils.isEmpty(jobPosting.getDetails())) {
 				continue;
-			} else if (!StringUtils.isEmpty(status) && StringUtils.isEmpty(jobPosting.getStatus())) {
+			} else if (!StringUtils.isEmpty(status)
+					&& StringUtils.isEmpty(jobPosting.getStatus())) {
 				continue;
-			} else if (!StringUtils.isEmpty(_jobId) && !StringUtils.isEmpty(jobPosting.get_jobId()) && !jobPosting.get_jobId().equals(_jobId)) {
+			} else if (!StringUtils.isEmpty(_jobId)
+					&& !StringUtils.isEmpty(jobPosting.get_jobId())
+					&& !jobPosting.get_jobId().equals(_jobId)) {
 				continue;
-			} else if (!StringUtils.isEmpty(_uId) && !StringUtils.isEmpty(jobPosting.get_uId()) && !jobPosting.get_uId().equals(_uId)) {
+			} else if (!StringUtils.isEmpty(_uId)
+					&& !StringUtils.isEmpty(jobPosting.get_uId())
+					&& !jobPosting.get_uId().equals(_uId)) {
 				continue;
-			} else if (!StringUtils.isEmpty(title) && !StringUtils.isEmpty(jobPosting.getTitle()) && !jobPosting.getTitle().equalsIgnoreCase(title)) {
+			} else if (!StringUtils.isEmpty(title)
+					&& !StringUtils.isEmpty(jobPosting.getTitle())
+					// && !jobPosting.getTitle().equalsIgnoreCase(title)
+					&& !org.apache.commons.lang.StringUtils.containsIgnoreCase(
+							jobPosting.getTitle(), title)) { // search by title
 				continue;
-			} else if (!StringUtils.isEmpty(closingTime) && !StringUtils.isEmpty(jobPosting.getClosingTime()) && !jobPosting.getClosingTime().equalsIgnoreCase(closingTime)) {
+			} else if (!StringUtils.isEmpty(closingTime)
+					&& !StringUtils.isEmpty(jobPosting.getClosingTime())
+					&& !jobPosting.getClosingTime().equalsIgnoreCase(
+							closingTime)) {
 				continue;
-			} else if (!StringUtils.isEmpty(salaryRate) && !StringUtils.isEmpty(jobPosting.getSalaryRate()) && !jobPosting.getSalaryRate().equalsIgnoreCase(salaryRate)) {
+			} else if (!StringUtils.isEmpty(salaryRate)
+					&& !StringUtils.isEmpty(jobPosting.getSalaryRate())
+					// &&
+					// !jobPosting.getSalaryRate().equalsIgnoreCase(salaryRate)
+					&& !org.apache.commons.lang.StringUtils.containsIgnoreCase(
+							jobPosting.getSalaryRate(), salaryRate)) { // search
+																		// by
+																		// salary
+																		// rate
 				continue;
-			} else if (!StringUtils.isEmpty(positionType) && !StringUtils.isEmpty(jobPosting.getPositionType()) && !jobPosting.getPositionType().equalsIgnoreCase(positionType)) {
+			} else if (!StringUtils.isEmpty(positionType)
+					&& !StringUtils.isEmpty(jobPosting.getPositionType())
+					// && !jobPosting.getPositionType().equalsIgnoreCase(
+					// positionType)
+					&& !org.apache.commons.lang.StringUtils.containsIgnoreCase(
+							jobPosting.getPositionType(), positionType)) { // search
+																			// by
+																			// position
+																			// type
 				continue;
-			} else if (!StringUtils.isEmpty(location) && !StringUtils.isEmpty(jobPosting.getLocation()) && !jobPosting.getLocation().equalsIgnoreCase(location)) {
+			} else if (!StringUtils.isEmpty(location)
+					&& !StringUtils.isEmpty(jobPosting.getLocation())
+					&& !jobPosting.getLocation().equalsIgnoreCase(location)
+					&& !org.apache.commons.lang.StringUtils.containsIgnoreCase(
+							jobPosting.getLocation(), location)) { // search by
+																	// location
 				continue;
-			} else if (!StringUtils.isEmpty(details) && !StringUtils.isEmpty(jobPosting.getDetails()) && !jobPosting.getDetails().equalsIgnoreCase(details)) {
+			} else if (!StringUtils.isEmpty(details)
+					&& !StringUtils.isEmpty(jobPosting.getDetails())
+					&& !jobPosting.getDetails().equalsIgnoreCase(details)) {
 				continue;
-			} else if (!StringUtils.isEmpty(status) && !StringUtils.isEmpty(jobPosting.getStatus()) && !jobPosting.getStatus().equalsIgnoreCase(status)) {
+			} else if (!StringUtils.isEmpty(status)
+					&& !StringUtils.isEmpty(jobPosting.getStatus())
+					&& !jobPosting.getStatus().equalsIgnoreCase(status)) {
 				continue;
 			}
 			jobPostingListResult.add(jobPosting);
 		}
-		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingListResult);
-		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
+		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler
+				.toResources(jobPostingListResult);
+		return new ResponseEntity<List<JobPostingResource>>(
+				jobPostingResourceList, HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/{_jobId}", method = RequestMethod.GET)
 	@ResponseBody
-	public HttpEntity<JobPostingResource> getJobPostingById(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException {
+	public HttpEntity<JobPostingResource> getJobPostingById(
+			@PathVariable(value = "_jobId") String _jobId)
+			throws JobPostingNotFoundException {
 		JobPosting jobPostingById = jobPostingDAO.findByJid(_jobId);
 		if (jobPostingById == null) {
-			throw new JobPostingNotFoundException("jobPosting with _jobid=" + _jobId + " not found in database.");
+			throw new JobPostingNotFoundException("jobPosting with _jobid="
+					+ _jobId + " not found in database.");
 		}
-		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingById);
-		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler
+				.toResource(jobPostingById);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource,
+				HttpStatus.OK);
 	}
-	 
+
 	@RequestMapping(value = "/{_jobId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public ResponseEntity<JobPostingResource> deleteJobPosting(@PathVariable(value = "_jobId") String _jobId) throws JobPostingNotFoundException, JobAppStatusCannotModifyException, TransformerException {
+	public ResponseEntity<JobPostingResource> deleteJobPosting(
+			@PathVariable(value = "_jobId") String _jobId)
+			throws JobPostingNotFoundException,
+			JobAppStatusCannotModifyException, TransformerException {
 		JobPosting jobPostingById = jobPostingDAO.findByJid(_jobId);
 		if (jobPostingById == null) {
-			throw new JobPostingNotFoundException("jobPosting with _jobid=" + _jobId + " not found in database.");
+			throw new JobPostingNotFoundException("jobPosting with _jobid="
+					+ _jobId + " not found in database.");
 		}
 		String status = jobPostingById.getStatus();
 		if (status.equals(JobStatus.ARCHIVED)) {
@@ -222,10 +298,12 @@ public class JobPostingController {
 		}
 		jobPostingById.setStatus(JobStatus.ARCHIVED);
 		jobPostingById = jobPostingDAO.update(jobPostingById);
-		JobPostingResource jobPostingResource = jobPostingResourceAssembler.toResource(jobPostingById);
-		return new ResponseEntity<JobPostingResource>(jobPostingResource, HttpStatus.OK);
+		JobPostingResource jobPostingResource = jobPostingResourceAssembler
+				.toResource(jobPostingById);
+		return new ResponseEntity<JobPostingResource>(jobPostingResource,
+				HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/_uId/{_uId}", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<List<JobPostingResource>> getJobPostingsByUid(
@@ -234,16 +312,17 @@ public class JobPostingController {
 		if (jobPostingList == null) {
 			jobPostingList = new ArrayList<JobPosting>();
 		}
-		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler.toResources(jobPostingList);
-		return new ResponseEntity<List<JobPostingResource>>(jobPostingResourceList, HttpStatus.OK);
+		List<JobPostingResource> jobPostingResourceList = jobPostingResourceAssembler
+				.toResources(jobPostingList);
+		return new ResponseEntity<List<JobPostingResource>>(
+				jobPostingResourceList, HttpStatus.OK);
 	}
-	
-	
-	@SuppressWarnings({"rawtypes", "unchecked" })
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@ExceptionHandler
 	ResponseEntity handleExceptions(Exception e) {
 		ResponseEntity responseEntity = null;
-		
+
 		// TODO handle exceptions of this controller
 		RESTError error = new RESTError();
 		if (e instanceof DAOException || e instanceof TransformerException) {
